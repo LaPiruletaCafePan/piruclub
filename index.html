@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>La PiruClub · Club de socios de La Piruleta</title>
+<meta name="description" content="Hazte socio de La Piruleta: suma puntos, sube de nivel y disfruta de promociones exclusivas.">
+<meta name="theme-color" content="#0E6878">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="PiruClub">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Figtree:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<style>
+:root{
+  --fondo:#FFFFFF; --suelo:#F3F8F9; --turquesa:#1B97AE; --turquesa-osc:#0E6878; --noche:#0A4652; --piruleta:#E8507A;
+  --tinta:#16343A; --suave:#5E7479; --linea:#E3ECEE; --aviso:#C62828; --ok:#1E8E5A;
+  --bronce:#C98A55; --plata:#AEB9C0; --oro:#E2B84A;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --fondo:#10232A; --suelo:#0B1A1F; --turquesa:#3FB6CB; --turquesa-osc:#8ED9E6; --noche:#06262E; --piruleta:#FF7FA2;
+    --tinta:#E9F4F6; --suave:#9CB4B9; --linea:#22414A; --aviso:#FF9A9A; --ok:#5FD39C;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --fondo:#10232A; --suelo:#0B1A1F; --turquesa:#3FB6CB; --turquesa-osc:#8ED9E6; --noche:#06262E; --piruleta:#FF7FA2;
+  --tinta:#E9F4F6; --suave:#9CB4B9; --linea:#22414A; --aviso:#FF9A9A; --ok:#5FD39C;
+  color-scheme: dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html,body{margin:0}
+body{background:var(--suelo);color:var(--tinta);font-family:"Figtree",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  font-size:16px;line-height:1.45;-webkit-font-smoothing:antialiased;min-height:100vh}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:40;background:var(--noche)}
+img{max-width:100%;display:block}
+button{font:inherit;color:inherit}
+a{color:var(--turquesa-osc)}
+:focus-visible{outline:3px solid var(--piruleta);outline-offset:2px;border-radius:8px}
+.app{max-width:520px;margin:0 auto;background:var(--fondo);min-height:100vh;position:relative}
+.con-nav{padding-bottom:96px}
+h1,h2,h3{margin:0}
+.titulo{font-family:"Baloo 2","Figtree",sans-serif;font-weight:800;color:var(--turquesa-osc);line-height:1.1}
+.bloque{padding:18px 18px 0}
+.nota{color:var(--suave);font-size:14.5px;margin:4px 0 0}
+.centrado{text-align:center}
+
+/* ---------- Botones y formularios ---------- */
+.boton{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px 18px;border-radius:999px;border:1.5px solid var(--linea);
+  background:var(--fondo);color:var(--tinta);font-weight:700;font-size:16px;cursor:pointer;text-decoration:none}
+.boton.rosa{background:var(--piruleta);border-color:var(--piruleta);color:#fff}
+.boton.turquesa{background:var(--turquesa);border-color:var(--turquesa);color:#fff}
+.boton.peq{width:auto;padding:9px 15px;font-size:14.5px}
+.boton.peligro{color:var(--aviso);border-color:var(--aviso)}
+.boton:disabled{opacity:.55;cursor:default}
+.enlace{background:none;border:0;padding:0;color:var(--turquesa-osc);font-weight:700;text-decoration:underline;cursor:pointer}
+.campo{display:block;margin:0 0 14px}
+.campo > span{display:block;font-size:14px;font-weight:700;margin:0 0 5px}
+.campo input,.campo select,.campo textarea{width:100%;font:inherit;font-size:16px;padding:12px 13px;border-radius:13px;border:1.5px solid var(--linea);background:var(--suelo);color:var(--tinta)}
+.campo textarea{min-height:80px;resize:vertical}
+.campo input:focus,.campo select:focus,.campo textarea:focus{outline:none;border-color:var(--turquesa)}
+.campo small{display:block;color:var(--suave);font-size:13px;margin-top:4px}
+.check{display:flex;gap:10px;align-items:flex-start;margin:0 0 12px;font-size:14.5px;cursor:pointer}
+.check input{width:20px;height:20px;flex:none;margin-top:1px;accent-color:var(--turquesa)}
+.error{color:var(--aviso);font-weight:700;font-size:14.5px;min-height:20px;margin:0 0 10px}
+.dos{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pila{display:grid;gap:10px}
+
+/* ---------- Portada (sin sesión) ---------- */
+.toldo{height:84px;position:relative;background:repeating-linear-gradient(90deg,var(--turquesa) 0 28px,#FFFFFF 28px 56px);
+  -webkit-mask:radial-gradient(14px at 50% 100%,#0000 98%,#000) 0 0/28px 100%;mask:radial-gradient(14px at 50% 100%,#0000 98%,#000) 0 0/28px 100%}
+.toldo::after{content:"";position:absolute;inset:0 0 auto;height:22px;background:linear-gradient(rgba(0,0,0,.18),transparent)}
+.portada{text-align:center;padding:0 20px;margin-top:-32px;position:relative}
+.logo{width:112px;height:112px;border-radius:50%;margin:0 auto;object-fit:cover;background:#fff;box-shadow:0 0 0 5px var(--fondo),0 8px 24px rgba(14,104,120,.22)}
+.portada h1{font-size:36px;margin:12px 0 0}
+.ventajas{list-style:none;margin:18px 0 0;padding:0;display:grid;gap:12px;text-align:left}
+.ventajas li{display:flex;gap:12px;align-items:center;font-size:15.5px}
+.ventajas .ic{flex:none;width:42px;height:42px;border-radius:14px;display:grid;place-items:center;background:var(--suelo);color:var(--turquesa-osc)}
+.ventajas .ic svg{width:22px;height:22px}
+.instalar{margin:22px 0 0;padding:16px;border-radius:20px;border:2px dashed var(--turquesa);text-align:left}
+.instalar h3{font-size:17px;margin:0 0 6px}
+.instalar ol{margin:8px 0 0;padding-left:20px;font-size:15px}
+.instalar ol li{margin:4px 0}
+.instalar .qr{width:150px;margin:10px auto 0;background:#fff;padding:8px;border-radius:12px}
+
+/* ---------- Cabecera del socio (estilo club) ---------- */
+.cab{background:linear-gradient(160deg,var(--noche),var(--turquesa-osc) 55%,var(--turquesa));color:#fff;padding:18px 18px 22px;border-radius:0 0 26px 26px;text-align:center;position:relative}
+:root[data-theme="dark"] .cab,.cab{--tx:#fff}
+.cab .saludo{font-size:15px;opacity:.9;margin:0}
+.arco{position:relative;width:250px;max-width:80%;margin:6px auto 0}
+.arco svg{width:100%;display:block;overflow:visible}
+.medalla{position:absolute;left:50%;top:56%;transform:translate(-50%,-50%);width:92px;height:92px;border-radius:50%;display:grid;place-items:center;
+  box-shadow:0 0 0 6px rgba(255,255,255,.12),0 10px 30px rgba(0,0,0,.35)}
+.medalla svg{width:46px;height:46px}
+.marcas{display:flex;justify-content:space-between;font-size:12.5px;font-weight:700;margin:-8px 4px 0;opacity:.95}
+.marcas span small{display:block;font-weight:600;opacity:.75}
+.cifras{display:flex;justify-content:center;gap:0;margin:12px 0 0}
+.cifras div{padding:0 18px}
+.cifras div + div{border-left:1.5px solid rgba(255,255,255,.35)}
+.cifras small{display:block;font-size:13px;opacity:.85}
+.cifras b{font-family:"Baloo 2","Figtree",sans-serif;font-size:34px;line-height:1}
+.siguiente{margin:10px 0 0;font-size:14px;opacity:.95}
+.caduca{display:inline-block;margin:10px 0 0;padding:5px 11px;border-radius:999px;background:rgba(255,255,255,.15);font-size:13px;font-weight:600}
+
+/* ---------- Tarjetas de acceso rápido ---------- */
+.rejilla{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mosaico{display:flex;flex-direction:column;gap:12px;align-items:flex-start;padding:16px;border-radius:18px;border:1.5px solid var(--linea);background:var(--fondo);cursor:pointer;text-align:left;min-height:110px}
+.mosaico svg{width:28px;height:28px;color:var(--turquesa)}
+.mosaico b{font-size:16px;line-height:1.25}
+.seccion-t{display:flex;justify-content:space-between;align-items:baseline;margin:24px 0 10px}
+.seccion-t h2{font-size:21px}
+
+/* ---------- Promociones ---------- */
+.promo{display:flex;gap:12px;align-items:flex-start;padding:14px;border-radius:18px;border:1.5px solid var(--linea);background:var(--fondo);margin:0 0 10px}
+.promo .ic{flex:none;width:46px;height:46px;border-radius:14px;display:grid;place-items:center;background:color-mix(in srgb,var(--piruleta) 14%,var(--fondo));color:var(--piruleta)}
+.promo .ic svg{width:24px;height:24px}
+.promo b{display:block;font-size:16px;line-height:1.25}
+.promo p{margin:3px 0 0;color:var(--suave);font-size:14.5px}
+.promo .meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.etq{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:800;background:var(--suelo);color:var(--suave)}
+.etq.bronce{background:color-mix(in srgb,var(--bronce) 25%,var(--fondo));color:#7A4A22}
+.etq.plata{background:color-mix(in srgb,var(--plata) 35%,var(--fondo));color:#4A5860}
+.etq.oro{background:color-mix(in srgb,var(--oro) 30%,var(--fondo));color:#7A5A0A}
+.promo.bloqueada{opacity:.6}
+.promo.bloqueada .ic{background:var(--suelo);color:var(--suave)}
+.promo .derecha{margin-left:auto;flex:none}
+.vacio{padding:24px 16px;text-align:center;color:var(--suave);border:1.5px dashed var(--linea);border-radius:18px}
+
+/* ---------- Niveles ---------- */
+.nivel{border:1.5px solid var(--linea);border-radius:18px;margin:0 0 10px;overflow:hidden}
+.nivel summary{list-style:none;display:flex;align-items:center;gap:12px;padding:14px;cursor:pointer}
+.nivel summary::-webkit-details-marker{display:none}
+.nivel .bola{width:34px;height:34px;border-radius:50%;flex:none}
+.nivel summary b{display:block}
+.nivel summary small{color:var(--suave)}
+.nivel .flecha{margin-left:auto;transition:transform .2s}
+.nivel[open] .flecha{transform:rotate(180deg)}
+.nivel .dentro{padding:0 14px 14px 60px;color:var(--suave);font-size:14.5px;white-space:pre-line}
+.nivel.actual{border-color:var(--turquesa)}
+.chip-actual{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:999px;background:var(--turquesa);color:#fff;font-size:11.5px;font-weight:800;vertical-align:2px}
+
+/* ---------- Historial ---------- */
+.mov{display:flex;gap:12px;align-items:center;padding:13px 0;border-bottom:1px solid var(--linea)}
+.mov:last-child{border-bottom:0}
+.mov .ic{flex:none;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--suelo);color:var(--turquesa)}
+.mov .ic svg{width:20px;height:20px}
+.mov .txt{flex:1;min-width:0}
+.mov .txt b{display:block;font-size:15.5px;font-weight:700}
+.mov .txt small{color:var(--suave)}
+.mov .pts{font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.mov .pts.mas{color:var(--ok)}
+.mov .pts.menos{color:var(--suave)}
+
+/* ---------- Tarjeta de socio ---------- */
+.carnet{margin:18px;border-radius:24px;padding:18px;color:#3A2A08;position:relative;overflow:hidden;box-shadow:0 12px 30px rgba(0,0,0,.18)}
+.carnet.bronce{background:linear-gradient(135deg,#E9B88A,#C98A55);color:#3B220C}
+.carnet.plata{background:linear-gradient(135deg,#E7EDF0,#AEB9C0);color:#26333A}
+.carnet.oro{background:linear-gradient(135deg,#F6DE8E,#E2B84A);color:#3A2A08}
+.carnet .arriba{display:flex;justify-content:space-between;align-items:center}
+.carnet .marca{font-family:"Baloo 2",sans-serif;font-weight:800;font-size:22px;line-height:1}
+.carnet .marca small{display:block;font-family:"Figtree",sans-serif;font-size:13px;font-weight:700;opacity:.8}
+.carnet .minilogo{width:46px;height:46px;border-radius:50%;background:#fff;object-fit:cover}
+.carnet .qr{background:#fff;border-radius:18px;padding:14px;margin:16px auto 0;max-width:270px}
+.carnet .qr svg{width:100%;height:auto;display:block}
+.carnet .num{text-align:center;font-weight:800;font-size:18px;letter-spacing:.06em;margin:12px 0 0;font-variant-numeric:tabular-nums}
+.carnet .abajo{display:flex;justify-content:space-between;margin-top:12px;font-size:14px;font-weight:700}
+.brillo{font-size:13.5px;color:var(--suave);text-align:center;margin:0 18px}
+
+/* ---------- Barra inferior ---------- */
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:30;pointer-events:none}
+.nav .dentro{pointer-events:auto;max-width:520px;margin:0 auto;background:var(--fondo);border-top:1px solid var(--linea);display:flex;justify-content:space-around;align-items:flex-end;
+  padding:6px 4px calc(8px + env(safe-area-inset-bottom,0px))}
+.nav button{flex:1;background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:12px;font-weight:700;color:var(--suave);cursor:pointer;padding:4px 0}
+.nav button svg{width:24px;height:24px}
+.nav button.activo{color:var(--turquesa-osc)}
+.nav button.central .bola{width:60px;height:60px;border-radius:50%;background:var(--piruleta);color:#fff;display:grid;place-items:center;margin-top:-26px;box-shadow:0 6px 18px rgba(232,80,122,.45)}
+.nav button.central .bola svg{width:28px;height:28px}
+
+/* ---------- Panel del local ---------- */
+.pestanas{display:flex;gap:6px;overflow-x:auto;padding:12px 18px 0;scrollbar-width:none}
+.pestanas::-webkit-scrollbar{display:none}
+.pestanas button{flex:none;padding:8px 13px;border-radius:999px;border:1.5px solid var(--linea);background:var(--fondo);font-weight:700;font-size:14.5px;cursor:pointer;color:var(--suave)}
+.pestanas button.activo{background:var(--tinta);border-color:var(--tinta);color:var(--fondo)}
+.lector{border-radius:18px;overflow:hidden;background:#000;min-height:260px}
+.ficha{border:1.5px solid var(--linea);border-radius:20px;padding:16px}
+.ficha .quien{display:flex;gap:12px;align-items:center}
+.ficha .bola{width:52px;height:52px;border-radius:50%;flex:none;display:grid;place-items:center;color:#fff;font-family:"Baloo 2",sans-serif;font-weight:800;font-size:22px}
+.ficha h3{font-size:19px}
+.ficha .datos{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0 0;text-align:center}
+.ficha .datos div{background:var(--suelo);border-radius:12px;padding:8px 4px}
+.ficha .datos b{display:block;font-size:18px}
+.ficha .datos small{color:var(--suave);font-size:12.5px}
+.aviso-cumple{margin:12px 0 0;padding:9px 12px;border-radius:12px;background:color-mix(in srgb,var(--piruleta) 14%,var(--fondo));color:var(--piruleta);font-weight:700;font-size:14.5px}
+.importe{display:flex;gap:8px;align-items:stretch}
+.importe input{flex:1;min-width:0;font:inherit;font-size:26px;font-weight:800;text-align:center;padding:10px;border-radius:14px;border:2px solid var(--linea);background:var(--suelo);color:var(--tinta)}
+.importe input:focus{outline:none;border-color:var(--turquesa)}
+.vista-pts{text-align:center;color:var(--suave);font-size:14.5px;margin:8px 0 12px}
+.fila{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--linea)}
+.fila:last-child{border-bottom:0}
+.fila .txt{min-width:0}
+.fila .txt b{display:block}
+.fila .txt small{color:var(--suave)}
+.cifra-grande{font-family:"Baloo 2",sans-serif;font-weight:800;font-size:30px;color:var(--turquesa-osc);line-height:1}
+
+/* ---------- Capas ---------- */
+.velo{position:fixed;inset:0;background:rgba(6,25,30,.55);z-index:50;display:none}
+.velo.ver{display:block}
+.hoja{position:fixed;left:0;right:0;bottom:0;z-index:51;background:var(--fondo);border-radius:24px 24px 0 0;max-width:520px;margin:0 auto;
+  padding:20px 18px calc(18px + env(safe-area-inset-bottom,0px));transform:translateY(105%);transition:transform .22s ease;max-height:90vh;overflow:auto}
+.hoja.ver{transform:none}
+.hoja h2{font-size:20px;margin:0 0 6px}
+.hoja .texto-legal{font-size:14px;color:var(--suave)}
+.hoja .texto-legal h3{font-size:15px;color:var(--tinta);margin:14px 0 4px}
+.hoja .texto-legal p{margin:0 0 6px}
+.botones{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+#aviso{position:fixed;left:50%;bottom:calc(100px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--tinta);color:var(--fondo);
+  padding:10px 16px;border-radius:999px;font-weight:700;font-size:15px;z-index:60;opacity:0;pointer-events:none;transition:opacity .15s;width:max-content;max-width:calc(100vw - 32px);text-align:center}
+#aviso.ver{opacity:1}
+.cargando{display:grid;place-items:center;min-height:70vh;color:var(--suave)}
+.giro{width:38px;height:38px;border-radius:50%;border:4px solid var(--linea);border-top-color:var(--turquesa);animation:giro .8s linear infinite;margin:0 auto 12px}
+@keyframes giro{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion: reduce){.hoja{transition:none}.giro{animation-duration:2.5s}}
+</style>
+</head>
+<body>
+<div class="app" id="app"><div class="cargando"><div><div class="giro"></div>Cargando…</div></div></div>
+<nav class="nav" id="nav" hidden></nav>
+<div class="velo" id="velo"></div>
+<div class="hoja" id="hoja" role="dialog" aria-modal="true"></div>
+<div id="aviso" role="status" aria-live="polite"></div>
+
+<script type="module">
+/* =====================================================================
+   AJUSTES DEL PROYECTO
+   ===================================================================== */
+const firebaseConfig = {
+  apiKey: "AIzaSyBrJR0xC7tdQ7iyIypMhsmSQOAnLAOm58I",
+  authDomain: "la-piruclub.firebaseapp.com",
+  projectId: "la-piruclub",
+  storageBucket: "la-piruclub.firebasestorage.app",
+  messagingSenderId: "98028929437",
+  appId: "1:98028929437:web:1b90627d2fbba7554f2f74"
+};
+// Cuando la app esté publicada en Google Play, pega aquí su enlace:
+const ENLACE_GOOGLE_PLAY = "";
+// Datos del responsable para la política de privacidad (rellenar):
+const NEGOCIO = {
+  nombre: "La Piruleta",
+  responsable: "[RAZÓN SOCIAL O NOMBRE DEL TITULAR] · NIF [NIF]",
+  direccion: "Calle Nilo 1, local 2, Alcorcón (Madrid)",
+  email: "[EMAIL DE CONTACTO]",
+  telefono: "912 002 024"
+};
+// Valores por defecto (se cambian desde el panel del local → Ajustes)
+const DEFECTO = {
+  puntosPorEuro: 1,
+  caducidadMeses: 6,
+  niveles: [
+    {id: "bronce", nombre: "Bronce", min: 0,   beneficios: "Regalo de bienvenida.\nRegalo en tu cumpleaños.\nPromociones para socios."},
+    {id: "plata",  nombre: "Plata",  min: 100, beneficios: "Todo lo de Bronce.\nPromociones exclusivas de nivel Plata."},
+    {id: "oro",    nombre: "Oro",    min: 300, beneficios: "Todo lo de Plata.\nLas mejores promociones, solo para Oro."}
+  ]
+};
+const VERSION_LEGAL = "1";
+
+/* ===================================================================== */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail,
+  signOut, deleteUser, EmailAuthProvider, reauthenticateWithCredential } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, collection, query, where, orderBy, limit,
+  getDocs, onSnapshot, serverTimestamp, Timestamp, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const fb = initializeApp(firebaseConfig);
+const auth = getAuth(fb);
+auth.languageCode = "es";
+const db = getFirestore(fb);
+
+/* ---------------------------- Utilidades ---------------------------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const may = s => s ? s.charAt(0).toUpperCase() + s.slice(1) : "";
+const ms = v => v?.toMillis ? v.toMillis() : (v instanceof Date ? v.getTime() : (typeof v === "number" ? v : 0));
+const fecha = v => { const t = ms(v); if (!t) return "Ahora"; return new Date(t).toLocaleDateString("es-ES", {day:"numeric", month:"short", year:"numeric"}); };
+const fechaCorta = v => { const t = ms(v); return t ? new Date(t).toLocaleDateString("es-ES", {day:"numeric", month:"long"}) : ""; };
+const euros = n => Number(n).toFixed(2).replace(".", ",") + " €";
+const numSocio = n => String(n || "").replace(/(\d{3})(?=\d)/g, "$1 ");
+const hoyISO = () => new Intl.DateTimeFormat("en-CA", {timeZone: "Europe/Madrid"}).format(new Date());
+const mesActual = () => +hoyISO().slice(5, 7);
+const anioActual = () => +hoyISO().slice(0, 4);
+const DIA = 86400000;
+const COLOR = {bronce: "var(--bronce)", plata: "var(--plata)", oro: "var(--oro)"};
+const ORDEN = {bronce: 0, plata: 1, oro: 2};
+
+let tAviso;
+function avisar(t){ const a = $("#aviso"); a.textContent = t; a.classList.add("ver"); clearTimeout(tAviso); tAviso = setTimeout(() => a.classList.remove("ver"), 2400); }
+
+function abrirHoja(html){ $("#hoja").innerHTML = html; $("#velo").classList.add("ver"); $("#hoja").classList.add("ver"); }
+function cerrarHoja(){ $("#velo").classList.remove("ver"); $("#hoja").classList.remove("ver"); pararLector(); }
+$("#velo").onclick = cerrarHoja;
+document.addEventListener("keydown", e => { if (e.key === "Escape") cerrarHoja(); });
+
+const ERRORES = {
+  "auth/email-already-in-use": "Ya hay una cuenta con ese email. Prueba a entrar.",
+  "auth/invalid-email": "El email no es válido.",
+  "auth/weak-password": "La contraseña debe tener al menos 6 caracteres.",
+  "auth/invalid-credential": "Email o contraseña incorrectos.",
+  "auth/wrong-password": "Contraseña incorrecta.",
+  "auth/user-not-found": "No hay ninguna cuenta con ese email.",
+  "auth/too-many-requests": "Demasiados intentos. Espera unos minutos.",
+  "auth/network-request-failed": "Sin conexión a internet. Inténtalo de nuevo.",
+  "permission-denied": "No tienes permiso para hacer esto."
+};
+const textoError = e => ERRORES[e?.code] || "Algo ha fallado. Inténtalo de nuevo.";
+
+/* ------------------------------ Iconos ------------------------------ */
+const I = {
+  casa: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>',
+  qr: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM18 18h3v3h-3zM14 20h2M20 14v2"/></svg>',
+  regalo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="8" width="18" height="5" rx="1"/><path d="M5 13v8h14v-8M12 8v13"/><path d="M12 8c-2-4-6-4-6-1.5S10 8 12 8zM12 8c2-4 6-4 6-1.5S14 8 12 8z"/></svg>',
+  persona: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>',
+  tienda: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 10v10h16V10"/><path d="M2 10l2-6h16l2 6c0 1.7-1.3 3-3 3s-3-1.3-3-3c0 1.7-1.3 3-3 3s-3-1.3-3-3c0 1.7-1.3 3-3 3s-3-1.3-3-3z"/><path d="M10 20v-5h4v5"/></svg>',
+  reloj: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+  estrella: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l2.9 6 6.6.8-4.9 4.5 1.3 6.5L12 17l-5.9 3.3 1.3-6.5L2.5 9.3l6.6-.8z"/></svg>',
+  candado: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
+  taza: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 9h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17M8 3v3M12 3v3"/></svg>',
+  info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>',
+  flecha: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6"/></svg>',
+  piruleta: '<svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="19" r="13" fill="#fff" opacity=".95"/><path d="M24 19m-9 0a9 9 0 1 1 18 0a6 6 0 1 1-12 0a3 3 0 1 1 6 0" stroke="#E8507A" stroke-width="3" stroke-linecap="round"/><path d="M24 32v12" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/></svg>',
+  pastel: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 20h16M5 20v-6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v6"/><path d="M5 16c1.5 1 2.5 1 3.5 0s2.5-1 3.5 0 2.5 1 3.5 0 2-1 3.5 0M12 12V8"/><path d="M12 5.5c.8-.8.8-1.7 0-2.5-.8.8-.8 1.7 0 2.5z" fill="currentColor"/></svg>',
+  subir: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 17l6-6 4 4 6-7"/><path d="M15 8h5v5"/></svg>'
+};
+const LOGO = "data:image/jpeg;base64,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";
+
+/* ------------------------------ Estado ------------------------------ */
+const S = {
+  user: null, socio: null, staff: null, ajustes: structuredClone(DEFECTO), promos: [], movs: [],
+  vista: "cargando", local: {pestana: "escanear", ficha: null}, subs: [], registrando: false
+};
+function limpiarSubs(){ S.subs.forEach(u => { try{ u(); }catch(e){} }); S.subs = []; }
+
+/* Ajustes y promociones (públicos) */
+onSnapshot(doc(db, "config", "ajustes"), s => {
+  if (s.exists()){
+    const d = s.data();
+    S.ajustes = {
+      puntosPorEuro: +d.puntosPorEuro || DEFECTO.puntosPorEuro,
+      caducidadMeses: +d.caducidadMeses || DEFECTO.caducidadMeses,
+      niveles: Array.isArray(d.niveles) && d.niveles.length === 3 ? d.niveles : DEFECTO.niveles
+    };
+  }
+  pintar();
+}, () => {});
+onSnapshot(collection(db, "promos"), s => {
+  S.promos = s.docs.map(d => ({id: d.id, ...d.data()}));
+  pintar();
+}, () => {});
+
+/* ---------------------------- Cálculos ---------------------------- */
+function niveles(){ return [...S.ajustes.niveles].sort((a, b) => a.min - b.min); }
+function calcular(movs){
+  const ahora = Date.now();
+  let puntos = 0; const vivos = [], caducados = [];
+  for (const m of movs){
+    if (m.tipo === "suma" || m.tipo === "ajuste"){
+      if (ms(m.caduca) > ahora){ puntos += m.puntos || 0; vivos.push(m); }
+      else caducados.push(m);
+    }
+  }
+  puntos = Math.max(0, puntos);
+  const ns = niveles();
+  let nivel = ns[0];
+  for (const n of ns) if (puntos >= n.min) nivel = n;
+  const siguiente = ns.find(n => n.min > puntos) || null;
+  const pronto = vivos.filter(m => m.tipo === "suma" && ms(m.caduca) - ahora < 30 * DIA).sort((a, b) => ms(a.caduca) - ms(b.caduca));
+  const caducaPronto = pronto.length ? {puntos: pronto.reduce((s, m) => s + m.puntos, 0), fecha: pronto[0].caduca} : null;
+  const canjes = movs.filter(m => m.tipo === "canje");
+  return {puntos, nivel, siguiente, caducados, canjes, caducaPronto};
+}
+function estadoPromo(p, socio, calc){
+  if (!p.activa) return "oculta";
+  const hoy = hoyISO();
+  if (p.desde && hoy < p.desde) return "oculta";
+  if (p.hasta && hoy > p.hasta) return "oculta";
+  const usadas = calc.canjes.filter(c => c.promoId === p.id);
+  if (p.tipo === "cumple"){
+    if (!socio?.nacimiento || +socio.nacimiento.slice(5, 7) !== mesActual()) return "oculta";
+    if (usadas.some(c => new Date(ms(c.fecha) || Date.now()).getFullYear() === anioActual())) return "usada";
+  } else if (p.tipo === "bienvenida"){
+    if (usadas.length) return "usada";
+    if (Date.now() - (ms(socio?.alta) || Date.now()) > 30 * DIA) return "oculta";
+  } else if (p.usos !== "ilimitada" && usadas.length) return "usada";
+  if ((ORDEN[p.nivel] ?? 0) > (ORDEN[calc.nivel.id] ?? 0)) return "bloqueada";
+  return "disponible";
+}
+function nombreNivel(id){ return (S.ajustes.niveles.find(n => n.id === id) || {nombre: may(id)}).nombre; }
+
+/* ------------------------------ Sesión ------------------------------ */
+onAuthStateChanged(auth, async user => {
+  limpiarSubs();
+  S.user = user; S.socio = null; S.staff = null; S.movs = [];
+  if (!user){ S.vista = "portada"; pintar(); return; }
+  S.vista = "cargando"; pintar();
+  try{
+    const st = await getDoc(doc(db, "staff", user.uid));
+    S.staff = st.exists() ? st.data() : null;
+  }catch(e){ S.staff = null; }
+  S.subs.push(onSnapshot(doc(db, "socios", user.uid), s => {
+    S.socio = s.exists() ? {id: s.id, ...s.data()} : null;
+    if (S.registrando && !S.socio) return;
+    if (S.vista === "cargando") S.vista = S.socio ? "inicio" : (S.staff ? "local" : "completar");
+    pintar();
+  }, () => {}));
+  let primera = true;
+  S.subs.push(onSnapshot(query(collection(db, "socios", user.uid, "movimientos"), orderBy("fecha", "desc"), limit(250)), s => {
+    const antes = calcular(S.movs).puntos;
+    S.movs = s.docs.map(d => ({id: d.id, ...d.data()}));
+    const ahora = calcular(S.movs).puntos;
+    if (!primera && ahora > antes) avisar(`¡Has sumado ${ahora - antes} puntos!`);
+    primera = false;
+    pintar();
+  }, () => {}));
+});
+
+/* ----------------------------- Pintado ----------------------------- */
+function ir(v){ S.vista = v; pintar(); window.scrollTo(0, 0); }
+function pintar(){
+  const app = $("#app"), nav = $("#nav");
+  const conNav = ["inicio", "tarjeta", "promos", "perfil", "historial", "local"].includes(S.vista);
+  nav.hidden = !conNav; app.classList.toggle("con-nav", conNav);
+  const V = {cargando: vCargando, portada: vPortada, registro: vRegistro, entrar: vEntrar, completar: vCompletar,
+    inicio: vInicio, tarjeta: vTarjeta, promos: vPromos, perfil: vPerfil, historial: vHistorial, local: vLocal};
+  app.innerHTML = (V[S.vista] || vCargando)();
+  if (conNav) nav.innerHTML = vNav();
+  despues();
+}
+function despues(){
+  if (S.vista === "tarjeta" && S.user){
+    const caja = $("#qrSocio");
+    if (caja && window.qrcode){
+      const q = qrcode(0, "M"); q.addData("PIRU:" + S.user.uid); q.make();
+      caja.innerHTML = q.createSvgTag({cellSize: 8, margin: 2, scalable: true});
+    }
+  }
+  if (S.vista === "portada") prepararInstalar();
+  if (S.vista === "local" && S.local.pestana === "socios") cargarSocios();
+  if (S.vista === "local" && S.local.pestana === "equipo") cargarEquipo();
+}
+
+function vCargando(){ return `<div class="cargando"><div><div class="giro"></div>Cargando…</div></div>`; }
+
+function vNav(){
+  const b = (v, ic, t) => `<button type="button" data-ir="${v}" class="${S.vista === v ? "activo" : ""}">${ic}${t}</button>`;
+  return `<div class="dentro">
+    ${b("inicio", I.casa, "Inicio")}
+    ${b("promos", I.regalo, "Promos")}
+    <button type="button" data-ir="tarjeta" class="central ${S.vista === "tarjeta" ? "activo" : ""}"><span class="bola">${I.qr}</span>Mi tarjeta</button>
+    ${S.staff ? b("local", I.tienda, "Local") : b("historial", I.reloj, "Historial")}
+    ${b("perfil", I.persona, "Perfil")}
+  </div>`;
+}
+
+/* ---------- Portada ---------- */
+function vPortada(){
+  const ns = niveles();
+  return `<div class="toldo" aria-hidden="true"></div>
+  <div class="portada">
+    <img class="logo" src="${LOGO}" alt="La Piruleta, cafetería y panadería">
+    <h1 class="titulo">La PiruClub</h1>
+    <p class="nota">El club de socios de La Piruleta</p>
+    <ul class="ventajas">
+      <li><span class="ic">${I.taza}</span><span>Suma <b>${S.ajustes.puntosPorEuro === 1 ? "1 punto por cada euro" : S.ajustes.puntosPorEuro + " puntos por cada euro"}</b> que gastes.</span></li>
+      <li><span class="ic">${I.subir}</span><span>Sube a <b>${esc(ns[1].nombre)}</b> y <b>${esc(ns[2].nombre)}</b> y desbloquea mejores promociones.</span></li>
+      <li><span class="ic">${I.regalo}</span><span>Regalos y descuentos <b>solo para socios</b>.</span></li>
+    </ul>
+    <div class="pila" style="margin-top:22px">
+      <button class="boton rosa" type="button" data-ir="registro">Hazte socio, es gratis</button>
+      <button class="boton" type="button" data-ir="entrar">Ya soy socio, entrar</button>
+    </div>
+    <div class="instalar" id="instalar" hidden></div>
+    <p class="nota" style="margin:20px 0 30px"><button class="enlace" type="button" data-legal="condiciones">Condiciones del club</button> · <button class="enlace" type="button" data-legal="privacidad">Privacidad</button></p>
+  </div>`;
+}
+let promptInstalar = null;
+window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); promptInstalar = e; if (S.vista === "portada") prepararInstalar(); });
+const esIOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+const esAndroid = () => /Android/i.test(navigator.userAgent);
+const instalada = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+function prepararInstalar(){
+  const c = $("#instalar"); if (!c || instalada()) return;
+  if (esAndroid()){
+    if (ENLACE_GOOGLE_PLAY){
+      c.innerHTML = `<h3>Descarga la app</h3><p class="nota">Tenla siempre a mano en tu móvil.</p><a class="boton turquesa" style="margin-top:10px" href="${ENLACE_GOOGLE_PLAY}">Descargar en Google Play</a>`;
+    } else if (promptInstalar){
+      c.innerHTML = `<h3>Instala la app</h3><p class="nota">Tendrás tu tarjeta de socio en la pantalla de inicio, como cualquier app.</p><button class="boton turquesa" style="margin-top:10px" type="button" id="btnInstalar">Instalar La PiruClub</button>`;
+      $("#btnInstalar").onclick = async () => { promptInstalar.prompt(); await promptInstalar.userChoice; promptInstalar = null; c.hidden = true; };
+    } else {
+      c.innerHTML = `<h3>Instala la app</h3><ol><li>Toca los tres puntos <b>⋮</b> de Chrome, arriba a la derecha.</li><li>Toca <b>Instalar aplicación</b> o <b>Añadir a pantalla de inicio</b>.</li></ol>`;
+    }
+  } else if (esIOS()){
+    c.innerHTML = `<h3>Instálala en tu iPhone</h3><p class="nota">Así tendrás tu tarjeta en la pantalla de inicio.</p><ol>
+      <li>Toca el botón <b>Compartir</b> (el cuadrado con la flecha ⬆️) en la barra de Safari.</li>
+      <li>Baja y toca <b>Añadir a pantalla de inicio</b>.</li><li>Toca <b>Añadir</b>.</li></ol>`;
+  } else {
+    let qr = "";
+    if (window.qrcode){ const q = qrcode(0, "M"); q.addData(location.href.split("#")[0]); q.make(); qr = `<div class="qr">${q.createSvgTag({cellSize: 6, margin: 1, scalable: true})}</div>`; }
+    c.innerHTML = `<h3>Ábrela en tu móvil</h3><p class="nota">La PiruClub está pensada para el móvil. Escanea este código con la cámara.</p>${qr}`;
+  }
+  c.hidden = false;
+}
+
+/* ---------- Registro y entrada ---------- */
+function vRegistro(){
+  return `<div class="toldo" aria-hidden="true"></div><div class="bloque">
+    <h1 class="titulo" style="font-size:30px">Hazte socio</h1>
+    <p class="nota" style="margin-bottom:18px">Solo te lleva un minuto.</p>
+    <label class="campo"><span>Nombre</span><input id="rNombre" autocomplete="given-name" placeholder="Cómo te llamamos"></label>
+    <label class="campo"><span>Email</span><input id="rEmail" type="email" autocomplete="email" inputmode="email"></label>
+    <label class="campo"><span>Contraseña</span><input id="rPass" type="password" autocomplete="new-password"><small>Mínimo 6 caracteres.</small></label>
+    <label class="campo"><span>Fecha de nacimiento</span><input id="rNac" type="date" max="${hoyISO()}"><small>Para tu regalo de cumpleaños. No se puede cambiar después.</small></label>
+    <label class="check"><input type="checkbox" id="rLegal"><span>Acepto las <button class="enlace" type="button" data-legal="condiciones">condiciones del club</button> y la <button class="enlace" type="button" data-legal="privacidad">política de privacidad</button>.</span></label>
+    <label class="check"><input type="checkbox" id="rMarketing"><span>Quiero recibir promociones y novedades de La Piruleta por email (opcional).</span></label>
+    <p class="error" id="rError" role="alert"></p>
+    <button class="boton rosa" type="button" id="btnRegistro">Crear mi cuenta</button>
+    <p class="centrado nota" style="margin:16px 0 30px">¿Ya eres socio? <button class="enlace" type="button" data-ir="entrar">Entrar</button> · <button class="enlace" type="button" data-ir="portada">Volver</button></p>
+  </div>`;
+}
+function vCompletar(){
+  return `<div class="toldo" aria-hidden="true"></div><div class="bloque">
+    <h1 class="titulo" style="font-size:28px">Completa tu registro</h1>
+    <p class="nota" style="margin-bottom:18px">Faltan unos datos para crear tu tarjeta de socio.</p>
+    <label class="campo"><span>Nombre</span><input id="rNombre" autocomplete="given-name"></label>
+    <label class="campo"><span>Fecha de nacimiento</span><input id="rNac" type="date" max="${hoyISO()}"></label>
+    <label class="check"><input type="checkbox" id="rLegal"><span>Acepto las <button class="enlace" type="button" data-legal="condiciones">condiciones del club</button> y la <button class="enlace" type="button" data-legal="privacidad">política de privacidad</button>.</span></label>
+    <label class="check"><input type="checkbox" id="rMarketing"><span>Quiero recibir promociones por email (opcional).</span></label>
+    <p class="error" id="rError" role="alert"></p>
+    <button class="boton rosa" type="button" id="btnCompletar">Crear mi tarjeta</button>
+    <p class="centrado nota" style="margin:16px 0 30px"><button class="enlace" type="button" id="btnSalir">Cerrar sesión</button></p>
+  </div>`;
+}
+function vEntrar(){
+  return `<div class="toldo" aria-hidden="true"></div><div class="bloque">
+    <h1 class="titulo" style="font-size:30px">Entrar</h1>
+    <p class="nota" style="margin-bottom:18px">Con el email y la contraseña de tu cuenta.</p>
+    <label class="campo"><span>Email</span><input id="eEmail" type="email" autocomplete="email" inputmode="email"></label>
+    <label class="campo"><span>Contraseña</span><input id="ePass" type="password" autocomplete="current-password"></label>
+    <p class="error" id="eError" role="alert"></p>
+    <button class="boton turquesa" type="button" id="btnEntrar">Entrar</button>
+    <p class="centrado" style="margin:14px 0 0"><button class="enlace" type="button" id="btnOlvido">¿Has olvidado tu contraseña?</button></p>
+    <p class="centrado nota" style="margin:16px 0 30px">¿Aún no eres socio? <button class="enlace" type="button" data-ir="registro">Hazte socio</button> · <button class="enlace" type="button" data-ir="portada">Volver</button></p>
+  </div>`;
+}
+async function crearFichaSocio(uid, email){
+  const nombre = $("#rNombre").value.trim(), nac = $("#rNac").value;
+  await setDoc(doc(db, "socios", uid), {
+    nombre, email: (email || "").toLowerCase(), nacimiento: nac,
+    numero: String(Math.floor(100000000 + Math.random() * 900000000)),
+    alta: serverTimestamp(), marketing: $("#rMarketing").checked,
+    legal: {version: VERSION_LEGAL, fecha: serverTimestamp()}
+  });
+}
+function validarDatos(err){
+  if (!$("#rNombre").value.trim()){ err.textContent = "Escribe tu nombre."; return false; }
+  if (!$("#rNac").value){ err.textContent = "Indica tu fecha de nacimiento."; return false; }
+  if (!$("#rLegal").checked){ err.textContent = "Tienes que aceptar las condiciones y la privacidad."; return false; }
+  return true;
+}
+async function registrar(){
+  const err = $("#rError"); err.textContent = "";
+  const email = $("#rEmail").value.trim().toLowerCase(), pass = $("#rPass").value;
+  if (!validarDatos(err)) return;
+  if (!email){ err.textContent = "Escribe tu email."; return; }
+  const b = $("#btnRegistro"); b.disabled = true; b.textContent = "Creando tu cuenta…";
+  let datos = null;
+  try{
+    S.vista = "cargando"; S.registrando = true;
+    datos = {nombre: $("#rNombre").value, nac: $("#rNac").value, mk: $("#rMarketing").checked};
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    await setDoc(doc(db, "socios", cred.user.uid), {
+      nombre: datos.nombre.trim(), email, nacimiento: datos.nac,
+      numero: String(Math.floor(100000000 + Math.random() * 900000000)),
+      alta: serverTimestamp(), marketing: datos.mk, legal: {version: VERSION_LEGAL, fecha: serverTimestamp()}
+    });
+    S.registrando = false; S.vista = "inicio"; pintar(); avisar("¡Bienvenido a La PiruClub!");
+  }catch(e){
+    S.registrando = false;
+    const vals = {n: datos?.nombre, e: email, nac: datos?.nac};
+    if (auth.currentUser && !S.socio){ S.vista = "completar"; pintar(); }
+    else { S.vista = "registro"; pintar(); $("#rNombre").value = vals.n || ""; $("#rEmail").value = vals.e || ""; $("#rNac").value = vals.nac || ""; }
+    $("#rError").textContent = textoError(e);
+  }
+}
+async function completar(){
+  const err = $("#rError"); err.textContent = "";
+  if (!validarDatos(err)) return;
+  try{ await crearFichaSocio(S.user.uid, S.user.email); S.vista = "inicio"; avisar("¡Bienvenido a La PiruClub!"); }
+  catch(e){ err.textContent = textoError(e); }
+}
+async function entrar(){
+  const err = $("#eError"); err.textContent = "";
+  const b = $("#btnEntrar"); b.disabled = true; b.textContent = "Entrando…";
+  try{ S.vista = "cargando"; await signInWithEmailAndPassword(auth, $("#eEmail").value.trim(), $("#ePass").value); }
+  catch(e){ const email = $("#eEmail")?.value; S.vista = "entrar"; pintar(); $("#eEmail").value = email || ""; $("#eError").textContent = textoError(e); }
+}
+async function olvido(){
+  const email = $("#eEmail").value.trim(), err = $("#eError");
+  if (!email){ err.textContent = "Escribe tu email arriba y vuelve a tocar aquí."; return; }
+  try{ await sendPasswordResetEmail(auth, email); err.textContent = ""; avisar("Te hemos enviado un email para cambiar la contraseña"); }
+  catch(e){ err.textContent = textoError(e); }
+}
+
+/* ---------- Inicio del socio ---------- */
+function cabecera(c){
+  const ns = niveles(), p = c.puntos;
+  // El arco va de Bronce (izquierda) a Plata (arriba) y a Oro (derecha)
+  const prog = p >= ns[2].min ? 1 : p >= ns[1].min ? 0.5 + 0.5 * (p - ns[1].min) / (ns[2].min - ns[1].min) : 0.5 * p / Math.max(1, ns[1].min);
+  const L = 251.3; // longitud del arco
+  return `<header class="cab">
+    <p class="saludo">Hola, ${esc(S.socio?.nombre || "socio")}</p>
+    <div class="arco">
+      <svg viewBox="0 0 200 120" aria-hidden="true">
+        <path d="M20 110 A80 80 0 0 1 180 110" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="12" stroke-linecap="round"/>
+        <path d="M20 110 A80 80 0 0 1 180 110" fill="none" stroke="#7FE3F2" stroke-width="12" stroke-linecap="round" stroke-dasharray="${(L * prog).toFixed(1)} ${L}"/>
+      </svg>
+      <div class="medalla" style="background:${COLOR[c.nivel.id]}">${I.piruleta}</div>
+    </div>
+    <div class="marcas"><span>${esc(ns[0].nombre)}<small>${ns[0].min} pts</small></span><span>${esc(ns[1].nombre)}<small>${ns[1].min} pts</small></span><span>${esc(ns[2].nombre)}<small>${ns[2].min}+ pts</small></span></div>
+    <div class="cifras"><div><small>Nivel actual</small><b>${esc(c.nivel.nombre)}</b></div><div><small>Puntos</small><b>${c.puntos.toLocaleString("es-ES")}</b></div></div>
+    <p class="siguiente">${c.siguiente ? `Te faltan <b>${c.siguiente.min - c.puntos}</b> puntos para ${esc(c.siguiente.nombre)}` : "¡Estás en el nivel más alto!"}</p>
+    ${c.caducaPronto ? `<span class="caduca">${c.caducaPronto.puntos} puntos caducan el ${fechaCorta(c.caducaPronto.fecha)}</span>` : ""}
+  </header>`;
+}
+function tarjetaPromo(p, estado){
+  const ic = p.tipo === "cumple" ? I.pastel : (estado === "bloqueada" ? I.candado : I.regalo);
+  const meta = [];
+  if (p.tipo === "cumple") meta.push(`<span class="etq">Tu cumpleaños</span>`);
+  else if (p.tipo === "bienvenida") meta.push(`<span class="etq">Bienvenida</span>`);
+  else meta.push(`<span class="etq ${p.nivel}">Nivel ${esc(nombreNivel(p.nivel))}</span>`);
+  if (p.hasta) meta.push(`<span class="etq">Hasta el ${fechaCorta(new Date(p.hasta + "T12:00:00"))}</span>`);
+  if (estado === "bloqueada") meta.push(`<span class="etq">Desbloquéala en ${esc(nombreNivel(p.nivel))}</span>`);
+  return `<div class="promo ${estado === "bloqueada" ? "bloqueada" : ""}"><span class="ic">${ic}</span>
+    <div><b>${esc(p.titulo)}</b>${p.descripcion ? `<p>${esc(p.descripcion)}</p>` : ""}<div class="meta">${meta.join("")}</div></div></div>`;
+}
+function listaPromos(c, incluirBloqueadas){
+  const d = [], b = [];
+  for (const p of S.promos){
+    const e = estadoPromo(p, S.socio, c);
+    if (e === "disponible") d.push(tarjetaPromo(p, e));
+    else if (e === "bloqueada" && incluirBloqueadas) b.push(tarjetaPromo(p, e));
+  }
+  return {d, b};
+}
+function vInicio(){
+  const c = calcular(S.movs), {d} = listaPromos(c, false);
+  return `${cabecera(c)}<div class="bloque">
+    <div class="rejilla">
+      <button class="mosaico" type="button" data-ir="tarjeta">${I.qr}<b>Usar mi tarjeta</b></button>
+      <button class="mosaico" type="button" data-ir="promos">${I.regalo}<b>Mis promociones</b></button>
+      <button class="mosaico" type="button" data-ir="historial">${I.reloj}<b>Mi historial</b></button>
+      <button class="mosaico" type="button" data-hoja="como">${I.info}<b>¿Cómo funciona?</b></button>
+    </div>
+    <div class="seccion-t"><h2 class="titulo">Para ti ahora</h2>${d.length > 2 ? `<button class="enlace" type="button" data-ir="promos">Ver todas</button>` : ""}</div>
+    ${d.length ? d.slice(0, 2).join("") : `<div class="vacio">Ahora mismo no tienes promociones activas. ¡Sigue sumando puntos!</div>`}
+    <div class="seccion-t"><h2 class="titulo">Niveles</h2></div>
+    ${bloqueNiveles(c)}
+  </div>`;
+}
+function bloqueNiveles(c){
+  return niveles().map((n, i, arr) => {
+    const hasta = arr[i + 1] ? `${n.min} a ${arr[i + 1].min - 1} puntos` : `A partir de ${n.min} puntos`;
+    const actual = n.id === c.nivel.id;
+    return `<details class="nivel ${actual ? "actual" : ""}" ${actual ? "open" : ""}><summary><span class="bola" style="background:${COLOR[n.id]}"></span>
+      <span><b>Nivel ${esc(n.nombre)}${actual ? `<span class="chip-actual">Actual</span>` : ""}</b><small>${hasta}</small></span><span class="flecha">${I.flecha}</span></summary>
+      <div class="dentro">${esc(n.beneficios || "")}</div></details>`;
+  }).join("");
+}
+function vPromos(){
+  const c = calcular(S.movs), {d, b} = listaPromos(c, true);
+  return `${cabeceraSimple("Mis promociones", "Enséñale al camarero la que quieras usar al pagar.")}<div class="bloque">
+    ${d.length ? d.join("") : `<div class="vacio">Ahora mismo no tienes promociones disponibles.</div>`}
+    ${b.length ? `<div class="seccion-t"><h2 class="titulo">Sube de nivel y desbloquea</h2></div>${b.join("")}` : ""}
+  </div>`;
+}
+function cabeceraSimple(t, sub){ return `<header class="cab" style="padding-bottom:20px"><h1 class="titulo" style="color:#fff;font-size:28px">${esc(t)}</h1>${sub ? `<p class="saludo" style="margin-top:4px">${esc(sub)}</p>` : ""}</header>`; }
+
+function vTarjeta(){
+  const c = calcular(S.movs);
+  return `${cabeceraSimple("Mi tarjeta", "Enséñala al pagar para sumar puntos.")}
+  <div class="carnet ${c.nivel.id}">
+    <div class="arriba"><div class="marca">La PiruClub<small>Nivel ${esc(c.nivel.nombre)}</small></div><img class="minilogo" src="${LOGO}" alt=""></div>
+    <div class="qr" id="qrSocio" aria-label="Código QR de socio"></div>
+    <div class="num">Nº ${numSocio(S.socio?.numero)}</div>
+    <div class="abajo"><span>${esc(S.socio?.nombre || "")}</span><span>${c.puntos.toLocaleString("es-ES")} puntos</span></div>
+  </div>
+  <p class="brillo">Consejo: sube el brillo de la pantalla para que el código se lea mejor.</p>`;
+}
+
+function vHistorial(){
+  const c = calcular(S.movs);
+  const items = [];
+  for (const m of S.movs){
+    if (m.tipo === "suma") items.push({t: ms(m.fecha) || Date.now(), html: mov(I.taza, "Consumo en La Piruleta", `${fecha(m.fecha)}${m.importe ? " · " + euros(m.importe) : ""}`, `+${m.puntos} pts`, "mas")});
+    else if (m.tipo === "ajuste") items.push({t: ms(m.fecha) || Date.now(), html: mov(I.info, m.motivo || "Ajuste de puntos", fecha(m.fecha), `${m.puntos > 0 ? "+" : ""}${m.puntos} pts`, m.puntos > 0 ? "mas" : "menos")});
+    else if (m.tipo === "canje") items.push({t: ms(m.fecha) || Date.now(), html: mov(I.regalo, "Promoción usada", `${esc(m.promoTitulo || "")} · ${fecha(m.fecha)}`, "", "")});
+  }
+  for (const m of c.caducados) if (m.tipo === "suma") items.push({t: ms(m.caduca), html: mov(I.info, "Vencimiento de puntos", fecha(m.caduca), `-${m.puntos} pts`, "menos")});
+  items.sort((a, b) => b.t - a.t);
+  return `${cabeceraSimple("Mi historial", `Tienes ${c.puntos} puntos. Caducan a los ${S.ajustes.caducidadMeses} meses de ganarlos.`)}<div class="bloque">
+    ${items.length ? items.map(i => i.html).join("") : `<div class="vacio">Aún no hay movimientos. Enseña tu tarjeta en tu próxima visita.</div>`}
+  </div>`;
+}
+function mov(ic, t, sub, pts, cls){ return `<div class="mov"><span class="ic">${ic}</span><div class="txt"><b>${t}</b><small>${sub}</small></div>${pts ? `<span class="pts ${cls}">${pts}</span>` : ""}</div>`; }
+
+function vPerfil(){
+  const s = S.socio || {};
+  return `${cabeceraSimple("Mi perfil", "")}<div class="bloque">
+    <div class="fila"><div class="txt"><small>Nombre</small><b>${esc(s.nombre)}</b></div><button class="boton peq" type="button" data-hoja="nombre">Cambiar</button></div>
+    <div class="fila"><div class="txt"><small>Email</small><b>${esc(S.user?.email)}</b></div></div>
+    <div class="fila"><div class="txt"><small>Número de socio</small><b>${numSocio(s.numero)}</b></div></div>
+    <div class="fila"><div class="txt"><small>Cumpleaños</small><b>${s.nacimiento ? fechaCorta(new Date(s.nacimiento + "T12:00:00")) : "Sin indicar"}</b></div></div>
+    <div class="fila"><div class="txt"><small>Socio desde</small><b>${fecha(s.alta)}</b></div></div>
+    <label class="check" style="margin-top:14px"><input type="checkbox" id="pMarketing" ${s.marketing ? "checked" : ""}><span>Quiero recibir promociones y novedades por email.</span></label>
+    <div class="pila" style="margin-top:18px">
+      <button class="boton" type="button" data-hoja="como">¿Cómo funciona el club?</button>
+      <button class="boton" type="button" data-legal="condiciones">Condiciones del club</button>
+      <button class="boton" type="button" data-legal="privacidad">Política de privacidad</button>
+      <button class="boton" type="button" id="btnSalir">Cerrar sesión</button>
+      <button class="boton peligro" type="button" data-hoja="borrar">Eliminar mi cuenta</button>
+    </div>
+    <p class="nota centrado" style="margin:20px 0 10px">${esc(NEGOCIO.nombre)} · ${esc(NEGOCIO.direccion)} · ${esc(NEGOCIO.telefono)}</p>
+  </div>`;
+}
+
+/* ---------- Hojas informativas ---------- */
+function hojaComo(){
+  const ns = niveles(), a = S.ajustes;
+  abrirHoja(`<h2>¿Cómo funciona La PiruClub?</h2><div class="texto-legal">
+    <h3>Suma puntos</h3><p>Enseña tu tarjeta (el código QR) al pagar y sumarás ${a.puntosPorEuro} punto${a.puntosPorEuro === 1 ? "" : "s"} por cada euro.</p>
+    <h3>Sube de nivel</h3><p>${ns.map(n => `<b>${esc(n.nombre)}</b>: desde ${n.min} puntos`).join(". ")}. Cada nivel desbloquea mejores promociones.</p>
+    <h3>Tus puntos caducan</h3><p>Cada punto caduca a los ${a.caducidadMeses} meses de ganarlo. Si dejas de venir, irás bajando de nivel poco a poco.</p>
+    <h3>Usa tus promociones</h3><p>Entra en «Promos», elige la que quieras y díselo al camarero al pagar. Él la marcará como usada.</p>
+    <h3>¿Cambias de móvil?</h3><p>No pasa nada: entra con tu email y contraseña y lo tendrás todo igual.</p>
+  </div><div class="botones"><button class="boton turquesa peq" type="button" data-cerrar>Entendido</button></div>`);
+}
+function hojaLegal(tipo){
+  const a = S.ajustes;
+  if (tipo === "privacidad") abrirHoja(`<h2>Política de privacidad</h2><div class="texto-legal">
+    <h3>Responsable</h3><p>${esc(NEGOCIO.responsable)}. ${esc(NEGOCIO.nombre)}, ${esc(NEGOCIO.direccion)}. Contacto: ${esc(NEGOCIO.email)}, ${esc(NEGOCIO.telefono)}.</p>
+    <h3>Qué datos tratamos</h3><p>Nombre, email, fecha de nacimiento, número de socio, puntos, visitas (fecha e importe) y promociones usadas.</p>
+    <h3>Para qué</h3><p>Gestionar tu participación en La PiruClub: sumar puntos, calcular tu nivel y ofrecerte las promociones del club. Si lo aceptas expresamente, también para enviarte promociones y novedades por email.</p>
+    <h3>Base legal</h3><p>Tu consentimiento al registrarte y la gestión del club que solicitas. El envío de comunicaciones comerciales solo se basa en tu consentimiento, que puedes retirar en cualquier momento desde tu perfil.</p>
+    <h3>Cuánto tiempo</h3><p>Mientras seas socio. Si eliminas tu cuenta, tus datos se borran.</p>
+    <h3>Quién más accede</h3><p>Nadie fuera de ${esc(NEGOCIO.nombre)}, salvo obligación legal. Los datos se alojan en Google Firebase (Google Ireland Ltd.), en servidores situados en Madrid (Unión Europea), que actúa como encargado del tratamiento.</p>
+    <h3>Tus derechos</h3><p>Puedes acceder, rectificar, suprimir, oponerte, limitar el tratamiento y pedir la portabilidad de tus datos escribiendo a ${esc(NEGOCIO.email)}. Puedes eliminar tu cuenta desde «Perfil». También puedes reclamar ante la Agencia Española de Protección de Datos (aepd.es).</p>
+  </div><div class="botones"><button class="boton turquesa peq" type="button" data-cerrar>Cerrar</button></div>`);
+  else abrirHoja(`<h2>Condiciones del club</h2><div class="texto-legal">
+    <p>La PiruClub es el programa de socios gratuito de ${esc(NEGOCIO.nombre)} (${esc(NEGOCIO.direccion)}).</p>
+    <h3>Puntos</h3><p>Se suman ${a.puntosPorEuro} punto${a.puntosPorEuro === 1 ? "" : "s"} por cada euro gastado, al enseñar la tarjeta de socio al pagar. Los puntos son personales, no tienen valor económico, no se pueden canjear por dinero y caducan a los ${a.caducidadMeses} meses de obtenerse.</p>
+    <h3>Niveles y promociones</h3><p>El nivel depende de los puntos vigentes. Cada promoción indica sus condiciones (nivel, fechas y usos) y debe solicitarse al pagar. Las promociones no son acumulables salvo que se indique lo contrario.</p>
+    <h3>Cambios</h3><p>${esc(NEGOCIO.nombre)} puede modificar los puntos, niveles y promociones, o finalizar el programa, avisando en la propia app.</p>
+    <h3>Uso indebido</h3><p>${esc(NEGOCIO.nombre)} puede anular puntos o cuentas en caso de uso fraudulento.</p>
+  </div><div class="botones"><button class="boton turquesa peq" type="button" data-cerrar>Cerrar</button></div>`);
+}
+function hojaNombre(){
+  abrirHoja(`<h2>Cambiar nombre</h2><label class="campo"><span>Nombre</span><input id="nNombre" value="${esc(S.socio?.nombre)}"></label>
+    <div class="botones"><button class="boton peq" type="button" data-cerrar>Cancelar</button><button class="boton turquesa peq" type="button" id="btnGuardarNombre">Guardar</button></div>`);
+}
+function hojaBorrar(){
+  abrirHoja(`<h2>Eliminar mi cuenta</h2><p class="nota">Se borrarán tu cuenta, tus puntos y tu historial. <b>No se puede deshacer.</b></p>
+    <label class="campo" style="margin-top:12px"><span>Escribe tu contraseña para confirmar</span><input id="bPass" type="password" autocomplete="current-password"></label>
+    <p class="error" id="bError" role="alert"></p>
+    <div class="botones"><button class="boton peq" type="button" data-cerrar>Cancelar</button><button class="boton peligro peq" type="button" id="btnBorrar">Eliminar definitivamente</button></div>`);
+}
+async function borrarCuenta(){
+  const err = $("#bError"), b = $("#btnBorrar"); err.textContent = "";
+  try{
+    b.disabled = true; b.textContent = "Eliminando…";
+    await reauthenticateWithCredential(S.user, EmailAuthProvider.credential(S.user.email, $("#bPass").value));
+    const uid = S.user.uid;
+    limpiarSubs();
+    const movs = await getDocs(collection(db, "socios", uid, "movimientos"));
+    let lote = writeBatch(db), n = 0;
+    for (const d of movs.docs){ lote.delete(d.ref); if (++n % 400 === 0){ await lote.commit(); lote = writeBatch(db); } }
+    await lote.commit();
+    await deleteDoc(doc(db, "socios", uid));
+    await deleteUser(S.user);
+    cerrarHoja(); avisar("Tu cuenta se ha eliminado");
+  }catch(e){ b.disabled = false; b.textContent = "Eliminar definitivamente"; err.textContent = textoError(e); }
+}
+
+/* =====================================================================
+   PANEL DEL LOCAL
+   ===================================================================== */
+const esAdmin = () => S.staff?.rol === "admin";
+function vLocal(){
+  if (!S.staff) return `<div class="bloque"><div class="vacio">No tienes acceso al panel del local.</div></div>`;
+  const tabs = [["escanear", "Socio"]];
+  if (esAdmin()) tabs.push(["promos", "Promociones"], ["socios", "Socios"], ["ajustes", "Ajustes"], ["equipo", "Equipo"]);
+  const p = S.local.pestana;
+  const cont = {escanear: lEscanear, promos: lPromos, socios: lSocios, ajustes: lAjustes, equipo: lEquipo}[p] || lEscanear;
+  return `${cabeceraSimple("Panel del local", `${esAdmin() ? "Administrador" : "Empleado"}: ${S.staff.nombre || ""}`)}
+    ${tabs.length > 1 ? `<div class="pestanas">${tabs.map(([id, t]) => `<button type="button" data-pestana="${id}" class="${p === id ? "activo" : ""}">${t}</button>`).join("")}</div>` : ""}
+    <div class="bloque">${cont()}</div>`;
+}
+
+/* ---------- Escanear / buscar socio ---------- */
+function lEscanear(){
+  const f = S.local.ficha;
+  if (f) return fichaSocio(f);
+  return `<button class="boton rosa" type="button" id="btnEscanear">${I.qr} Escanear tarjeta</button>
+    <p class="centrado nota" style="margin:14px 0">o busca por número de socio o email</p>
+    <div class="importe" style="margin-bottom:8px"><input id="buscar" style="font-size:18px" placeholder="123 456 789 o email" autocomplete="off"></div>
+    <button class="boton" type="button" id="btnBuscar">Buscar</button>
+    <p class="error" id="bsError" role="alert" style="margin-top:10px"></p>
+    <div id="resultados"></div>`;
+}
+let lector = null;
+async function cargarScript(src){
+  if (document.querySelector(`script[src="${src}"]`)) return;
+  await new Promise((ok, mal) => { const s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = mal; document.head.appendChild(s); });
+}
+async function abrirLector(){
+  abrirHoja(`<h2>Escanear tarjeta</h2><p class="nota">Apunta al código QR de la tarjeta del socio.</p><div class="lector" id="lector" style="margin-top:12px"></div>
+    <div class="botones"><button class="boton peq" type="button" data-cerrar>Cancelar</button></div>`);
+  try{
+    await cargarScript("https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js");
+    lector = new Html5Qrcode("lector");
+    await lector.start({facingMode: "environment"}, {fps: 10, qrbox: {width: 230, height: 230}}, async texto => {
+      const m = /^PIRU:([A-Za-z0-9]+)$/.exec(texto.trim());
+      if (!m){ avisar("Este código no es una tarjeta de La PiruClub"); return; }
+      cerrarHoja(); await abrirFicha(m[1]);
+    }, () => {});
+  }catch(e){ $("#lector").innerHTML = `<div class="vacio" style="color:#fff">No se ha podido abrir la cámara. Revisa los permisos del navegador o busca por número de socio.</div>`; }
+}
+function pararLector(){ if (lector){ const l = lector; lector = null; l.stop().catch(() => {}).finally(() => { try{ l.clear(); }catch(e){} }); } }
+async function buscarSocio(){
+  const v = $("#buscar").value.trim(), err = $("#bsError"), res = $("#resultados");
+  err.textContent = ""; res.innerHTML = "";
+  if (!v) return;
+  try{
+    const q = v.includes("@") ? query(collection(db, "socios"), where("email", "==", v.toLowerCase()))
+                              : query(collection(db, "socios"), where("numero", "==", v.replace(/\D/g, "")));
+    let r = await getDocs(q);
+    if (r.empty && v.includes("@")) r = await getDocs(query(collection(db, "socios"), where("email", "==", v)));
+    if (r.empty){ err.textContent = "No se ha encontrado ningún socio."; return; }
+    if (r.size === 1){ await abrirFicha(r.docs[0].id); return; }
+    res.innerHTML = r.docs.map(d => `<div class="fila"><div class="txt"><b>${esc(d.data().nombre)}</b><small>${esc(d.data().email)}</small></div><button class="boton peq" type="button" data-ficha="${d.id}">Abrir</button></div>`).join("");
+  }catch(e){ err.textContent = textoError(e); }
+}
+async function abrirFicha(uid){
+  try{
+    const s = await getDoc(doc(db, "socios", uid));
+    if (!s.exists()){ avisar("Ese socio no existe"); return; }
+    const m = await getDocs(query(collection(db, "socios", uid, "movimientos"), orderBy("fecha", "desc"), limit(250)));
+    S.local.ficha = {id: uid, ...s.data(), movs: m.docs.map(d => ({id: d.id, ...d.data()}))};
+    S.local.pestana = "escanear"; S.vista = "local"; pintar(); window.scrollTo(0, 0);
+  }catch(e){ avisar(textoError(e)); }
+}
+function fichaSocio(f){
+  const c = calcular(f.movs);
+  const promos = S.promos.map(p => ({p, e: estadoPromo(p, f, c)})).filter(x => x.e === "disponible");
+  const cumple = f.nacimiento && +f.nacimiento.slice(5, 7) === mesActual();
+  const ult = f.movs.filter(m => m.tipo !== "canje").slice(0, 4);
+  return `<div class="ficha">
+    <div class="quien"><span class="bola" style="background:${COLOR[c.nivel.id]}">${esc((f.nombre || "?").charAt(0).toUpperCase())}</span>
+      <div><h3>${esc(f.nombre)}</h3><small class="nota">Nº ${numSocio(f.numero)}</small></div></div>
+    <div class="datos"><div><b>${esc(c.nivel.nombre)}</b><small>Nivel</small></div><div><b>${c.puntos}</b><small>Puntos</small></div><div><b>${f.movs.filter(m => m.tipo === "suma").length}</b><small>Visitas</small></div></div>
+    ${cumple ? `<div class="aviso-cumple">🎂 ¡Este mes es su cumpleaños!</div>` : ""}
+  </div>
+  <div class="seccion-t"><h2 class="titulo">Sumar puntos</h2></div>
+  <div class="importe"><input id="importe" type="text" inputmode="decimal" placeholder="0,00 €" autocomplete="off"></div>
+  <p class="vista-pts" id="vistaPts">Escribe el importe del ticket</p>
+  <button class="boton rosa" type="button" id="btnSumar">Sumar puntos</button>
+  <div class="seccion-t"><h2 class="titulo">Promociones disponibles</h2></div>
+  ${promos.length ? promos.map(({p}) => `<div class="fila"><div class="txt"><b>${esc(p.titulo)}</b><small>${esc(p.descripcion || "")}</small></div><button class="boton turquesa peq" type="button" data-canjear="${p.id}">Canjear</button></div>`).join("") : `<div class="vacio">No tiene promociones disponibles ahora.</div>`}
+  ${esAdmin() ? `<div class="seccion-t"><h2 class="titulo">Ajuste manual</h2></div>
+    <div class="dos"><label class="campo"><span>Puntos (+ o −)</span><input id="ajPts" type="number" inputmode="numeric" placeholder="-10"></label>
+    <label class="campo"><span>Motivo</span><input id="ajMotivo" placeholder="Corrección"></label></div>
+    <button class="boton" type="button" id="btnAjuste">Aplicar ajuste</button>` : ""}
+  <div class="seccion-t"><h2 class="titulo">Últimas visitas</h2></div>
+  ${ult.length ? ult.map(m => mov(m.tipo === "suma" ? I.taza : I.info, m.tipo === "suma" ? euros(m.importe || 0) : esc(m.motivo || "Ajuste"), fecha(m.fecha), `${m.puntos > 0 ? "+" : ""}${m.puntos} pts`, m.puntos >= 0 ? "mas" : "menos")).join("") : `<div class="vacio">Todavía no tiene visitas.</div>`}
+  <div class="pila" style="margin:20px 0 10px"><button class="boton" type="button" id="btnOtro">Atender a otro socio</button></div>`;
+}
+function leerImporte(){ const v = parseFloat(($("#importe")?.value || "").replace(",", ".")); return isFinite(v) ? v : 0; }
+const ptsDe = imp => Math.floor(imp * S.ajustes.puntosPorEuro + 1e-9);
+function caducaDesde(){ const d = new Date(); d.setMonth(d.getMonth() + S.ajustes.caducidadMeses); return Timestamp.fromDate(d); }
+async function sumarPuntos(){
+  const f = S.local.ficha, imp = leerImporte(), pts = ptsDe(imp);
+  if (imp <= 0){ avisar("Escribe el importe del ticket"); return; }
+  if (imp > 500){ avisar("Importe demasiado alto. Revísalo."); return; }
+  const b = $("#btnSumar"); b.disabled = true; b.textContent = "Sumando…";
+  try{
+    await addDoc(collection(db, "socios", f.id, "movimientos"), {
+      tipo: "suma", puntos: pts, importe: Math.round(imp * 100) / 100, fecha: serverTimestamp(), caduca: caducaDesde(),
+      por: S.user.uid, porNombre: S.staff.nombre || ""
+    });
+    const c = calcular(f.movs);
+    await updateDoc(doc(db, "socios", f.id), {ultimaVisita: serverTimestamp(), puntosAprox: c.puntos + pts}).catch(() => {});
+    avisar(`+${pts} puntos para ${f.nombre}`);
+    await abrirFicha(f.id);
+  }catch(e){ b.disabled = false; b.textContent = "Sumar puntos"; avisar(textoError(e)); }
+}
+async function canjear(promoId){
+  const f = S.local.ficha, p = S.promos.find(x => x.id === promoId); if (!p) return;
+  abrirHoja(`<h2>¿Canjear esta promoción?</h2><p><b>${esc(p.titulo)}</b></p><p class="nota">${esc(p.descripcion || "")}</p><p class="nota">Para ${esc(f.nombre)}.</p>
+    <div class="botones"><button class="boton peq" type="button" data-cerrar>Cancelar</button><button class="boton turquesa peq" type="button" id="btnConfCanje">Sí, canjear</button></div>`);
+  $("#btnConfCanje").onclick = async () => {
+    try{
+      await addDoc(collection(db, "socios", f.id, "movimientos"), {tipo: "canje", puntos: 0, promoId: p.id, promoTitulo: p.titulo, fecha: serverTimestamp(), por: S.user.uid, porNombre: S.staff.nombre || ""});
+      cerrarHoja(); avisar("Promoción canjeada"); await abrirFicha(f.id);
+    }catch(e){ avisar(textoError(e)); }
+  };
+}
+async function ajusteManual(){
+  const f = S.local.ficha, pts = parseInt($("#ajPts").value, 10), motivo = $("#ajMotivo").value.trim() || "Ajuste de puntos";
+  if (!pts){ avisar("Indica los puntos"); return; }
+  try{
+    await addDoc(collection(db, "socios", f.id, "movimientos"), {tipo: "ajuste", puntos: pts, motivo, fecha: serverTimestamp(), caduca: caducaDesde(), por: S.user.uid, porNombre: S.staff.nombre || ""});
+    avisar("Ajuste aplicado"); await abrirFicha(f.id);
+  }catch(e){ avisar(textoError(e)); }
+}
+
+/* ---------- Promociones (admin) ---------- */
+function lPromos(){
+  const ps = [...S.promos].sort((a, b) => (b.activa ? 1 : 0) - (a.activa ? 1 : 0) || (ORDEN[a.nivel] ?? 0) - (ORDEN[b.nivel] ?? 0));
+  const tipoTxt = p => p.tipo === "cumple" ? "Cumpleaños" : p.tipo === "bienvenida" ? "Bienvenida" : `Nivel ${nombreNivel(p.nivel)}`;
+  return `<button class="boton rosa" type="button" data-editar-promo="">+ Nueva promoción</button>
+    <div style="margin-top:14px">${ps.length ? ps.map(p => `<div class="fila"><div class="txt"><b>${esc(p.titulo)}</b>
+      <small>${tipoTxt(p)} · ${p.activa ? "Activa" : "Pausada"}${p.hasta ? " · hasta " + esc(p.hasta) : ""}</small></div>
+      <button class="boton peq" type="button" data-editar-promo="${p.id}">Editar</button></div>`).join("") : `<div class="vacio">Aún no hay promociones. Crea la primera.</div>`}</div>`;
+}
+function editarPromo(id){
+  const p = S.promos.find(x => x.id === id) || {titulo: "", descripcion: "", tipo: "normal", nivel: "bronce", usos: "una", desde: "", hasta: "", activa: true};
+  const ns = niveles();
+  abrirHoja(`<h2>${id ? "Editar promoción" : "Nueva promoción"}</h2>
+    <label class="campo"><span>Título</span><input id="pTitulo" value="${esc(p.titulo)}" placeholder="Ej.: Café gratis"></label>
+    <label class="campo"><span>Descripción</span><textarea id="pDesc" placeholder="Ej.: Un café solo o con leche gratis en tu próxima visita.">${esc(p.descripcion)}</textarea></label>
+    <label class="campo"><span>Tipo</span><select id="pTipo">
+      <option value="normal" ${p.tipo === "normal" ? "selected" : ""}>Normal (según nivel)</option>
+      <option value="bienvenida" ${p.tipo === "bienvenida" ? "selected" : ""}>Bienvenida (primeros 30 días, una vez)</option>
+      <option value="cumple" ${p.tipo === "cumple" ? "selected" : ""}>Cumpleaños (su mes, una vez al año)</option></select></label>
+    <div class="dos">
+      <label class="campo"><span>Nivel mínimo</span><select id="pNivel">${ns.map(n => `<option value="${n.id}" ${p.nivel === n.id ? "selected" : ""}>${esc(n.nombre)}</option>`).join("")}</select></label>
+      <label class="campo"><span>Usos por socio</span><select id="pUsos"><option value="una" ${p.usos !== "ilimitada" ? "selected" : ""}>Una vez</option><option value="ilimitada" ${p.usos === "ilimitada" ? "selected" : ""}>Sin límite</option></select></label>
+    </div>
+    <div class="dos">
+      <label class="campo"><span>Desde (opcional)</span><input id="pDesde" type="date" value="${esc(p.desde)}"></label>
+      <label class="campo"><span>Hasta (opcional)</span><input id="pHasta" type="date" value="${esc(p.hasta)}"></label>
+    </div>
+    <label class="check"><input type="checkbox" id="pActiva" ${p.activa ? "checked" : ""}><span>Activa (visible para los socios)</span></label>
+    <p class="error" id="pError" role="alert"></p>
+    <div class="botones">${id ? `<button class="boton peligro peq" type="button" id="btnBorrarPromo">Borrar</button>` : ""}
+      <button class="boton peq" type="button" data-cerrar>Cancelar</button><button class="boton turquesa peq" type="button" id="btnGuardarPromo">Guardar</button></div>`);
+  $("#btnGuardarPromo").onclick = async () => {
+    const datos = {titulo: $("#pTitulo").value.trim(), descripcion: $("#pDesc").value.trim(), tipo: $("#pTipo").value, nivel: $("#pNivel").value,
+      usos: $("#pUsos").value, desde: $("#pDesde").value, hasta: $("#pHasta").value, activa: $("#pActiva").checked};
+    if (!datos.titulo){ $("#pError").textContent = "Ponle un título."; return; }
+    if (datos.desde && datos.hasta && datos.hasta < datos.desde){ $("#pError").textContent = "La fecha «hasta» es anterior a «desde»."; return; }
+    try{
+      if (id) await setDoc(doc(db, "promos", id), datos); else await addDoc(collection(db, "promos"), {...datos, creada: serverTimestamp()});
+      cerrarHoja(); avisar("Promoción guardada");
+    }catch(e){ $("#pError").textContent = textoError(e); }
+  };
+  if (id) $("#btnBorrarPromo").onclick = async () => {
+    if (!confirm("¿Borrar esta promoción? Si solo quieres ocultarla, desmarca «Activa».")) return;
+    try{ await deleteDoc(doc(db, "promos", id)); cerrarHoja(); avisar("Promoción borrada"); }catch(e){ $("#pError").textContent = textoError(e); }
+  };
+}
+
+/* ---------- Socios (admin) ---------- */
+let SOCIOS = null;
+function lSocios(){
+  return `<div class="ficha" style="text-align:center"><div class="cifra-grande" id="totalSocios">…</div><small class="nota">socios registrados</small></div>
+    <div class="importe" style="margin:14px 0 8px"><input id="filtroSocios" style="font-size:17px" placeholder="Buscar por nombre o email"></div>
+    <button class="boton" type="button" id="btnExportar">Descargar copia (Excel / CSV)</button>
+    <div id="listaSocios" style="margin-top:10px"></div>`;
+}
+async function cargarSocios(){
+  try{
+    if (!SOCIOS){
+      const r = await getDocs(query(collection(db, "socios"), orderBy("alta", "desc"), limit(2000)));
+      SOCIOS = r.docs.map(d => ({id: d.id, ...d.data()}));
+    }
+    if (S.local.pestana !== "socios" || !$("#totalSocios")) return;
+    $("#totalSocios").textContent = SOCIOS.length;
+    pintarListaSocios();
+  }catch(e){ const l = $("#listaSocios"); if (l) l.innerHTML = `<p class="error">${textoError(e)}</p>`; }
+}
+function pintarListaSocios(){
+  const f = ($("#filtroSocios")?.value || "").toLowerCase();
+  const l = SOCIOS.filter(s => !f || (s.nombre || "").toLowerCase().includes(f) || (s.email || "").toLowerCase().includes(f)).slice(0, 100);
+  $("#listaSocios").innerHTML = l.map(s => `<div class="fila"><div class="txt"><b>${esc(s.nombre)}</b><small>${esc(s.email)} · alta ${fecha(s.alta)}${s.ultimaVisita ? " · última visita " + fecha(s.ultimaVisita) : ""}</small></div>
+    <button class="boton peq" type="button" data-ficha="${s.id}">Ver</button></div>`).join("") || `<div class="vacio">Sin resultados.</div>`;
+}
+function exportar(){
+  if (!SOCIOS) return;
+  const cab = ["Número", "Nombre", "Email", "Nacimiento", "Alta", "Última visita", "Puntos aprox.", "Acepta emails"];
+  const c = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const fl = SOCIOS.map(s => [s.numero, s.nombre, s.email, s.nacimiento, fecha(s.alta), s.ultimaVisita ? fecha(s.ultimaVisita) : "", s.puntosAprox ?? "", s.marketing ? "Sí" : "No"].map(c).join(";"));
+  const blob = new Blob(["\ufeff" + [cab.map(c).join(";"), ...fl].join("\r\n")], {type: "text/csv;charset=utf-8"});
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `socios-piruclub-${hoyISO()}.csv`; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+}
+
+/* ---------- Ajustes (admin) ---------- */
+function lAjustes(){
+  const a = S.ajustes, ns = niveles();
+  return `<div class="dos">
+      <label class="campo"><span>Puntos por euro</span><input id="aPPE" type="number" step="0.5" min="0.5" value="${a.puntosPorEuro}"></label>
+      <label class="campo"><span>Caducidad (meses)</span><input id="aCad" type="number" min="1" max="36" value="${a.caducidadMeses}"></label>
+    </div>
+    ${ns.map((n, i) => `<div class="ficha" style="margin-bottom:10px">
+      <div class="dos"><label class="campo"><span>Nombre del nivel</span><input id="aN${i}" value="${esc(n.nombre)}"></label>
+      <label class="campo"><span>Desde (puntos)</span><input id="aM${i}" type="number" min="0" value="${n.min}" ${i === 0 ? "disabled" : ""}></label></div>
+      <label class="campo" style="margin:0"><span>Beneficios (los ven los socios)</span><textarea id="aB${i}">${esc(n.beneficios || "")}</textarea></label></div>`).join("")}
+    <p class="error" id="aError" role="alert"></p>
+    <button class="boton rosa" type="button" id="btnGuardarAjustes">Guardar ajustes</button>
+    <p class="nota" style="margin:12px 0 0">Los cambios de puntos por euro y caducidad se aplican a las visitas nuevas.</p>`;
+}
+async function guardarAjustes(){
+  const ns = niveles(), err = $("#aError");
+  const nuevos = ns.map((n, i) => ({id: n.id, nombre: $("#aN" + i).value.trim() || n.nombre, min: i === 0 ? 0 : parseInt($("#aM" + i).value, 10) || 0, beneficios: $("#aB" + i).value.trim()}));
+  if (!(nuevos[1].min > 0 && nuevos[2].min > nuevos[1].min)){ err.textContent = "Cada nivel debe empezar en más puntos que el anterior."; return; }
+  const ppe = parseFloat($("#aPPE").value), cad = parseInt($("#aCad").value, 10);
+  if (!(ppe > 0) || !(cad >= 1)){ err.textContent = "Revisa los puntos por euro y la caducidad."; return; }
+  try{ await setDoc(doc(db, "config", "ajustes"), {puntosPorEuro: ppe, caducidadMeses: cad, niveles: nuevos}); avisar("Ajustes guardados"); }
+  catch(e){ err.textContent = textoError(e); }
+}
+
+/* ---------- Equipo (admin) ---------- */
+function lEquipo(){
+  return `<p class="nota" style="margin:0 0 12px">Para añadir a un empleado: que se registre primero como socio en la app y te diga su número de socio.</p>
+    <div class="importe" style="margin-bottom:8px"><input id="eqNum" style="font-size:18px" inputmode="numeric" placeholder="Número de socio"></div>
+    <button class="boton rosa" type="button" id="btnAddEquipo">Añadir como empleado</button>
+    <p class="error" id="eqError" role="alert" style="margin-top:10px"></p>
+    <div id="listaEquipo"></div>`;
+}
+async function cargarEquipo(){
+  try{
+    const r = await getDocs(collection(db, "staff"));
+    const l = $("#listaEquipo"); if (!l) return;
+    l.innerHTML = r.docs.map(d => { const x = d.data(); return `<div class="fila"><div class="txt"><b>${esc(x.nombre || "Sin nombre")}</b><small>${x.rol === "admin" ? "Administrador" : "Empleado"}</small></div>
+      ${d.id !== S.user.uid && x.rol !== "admin" ? `<button class="boton peligro peq" type="button" data-quitar="${d.id}">Quitar</button>` : ""}</div>`; }).join("");
+  }catch(e){ const l = $("#listaEquipo"); if (l) l.innerHTML = `<p class="error">${textoError(e)}</p>`; }
+}
+async function anadirEquipo(){
+  const n = $("#eqNum").value.replace(/\D/g, ""), err = $("#eqError"); err.textContent = "";
+  if (!n) return;
+  try{
+    const r = await getDocs(query(collection(db, "socios"), where("numero", "==", n)));
+    if (r.empty){ err.textContent = "No hay ningún socio con ese número."; return; }
+    const s = r.docs[0];
+    await setDoc(doc(db, "staff", s.id), {rol: "empleado", nombre: s.data().nombre || ""});
+    $("#eqNum").value = ""; avisar(`${s.data().nombre} ya es empleado`); cargarEquipo();
+  }catch(e){ err.textContent = textoError(e); }
+}
+
+/* ------------------------- Eventos globales ------------------------- */
+document.addEventListener("click", e => {
+  const t = e.target.closest("button, a"); if (!t) return;
+  const d = t.dataset;
+  if (d.ir !== undefined){ ir(d.ir); return; }
+  if (d.legal){ hojaLegal(d.legal); return; }
+  if (d.cerrar !== undefined){ cerrarHoja(); return; }
+  if (d.hoja === "como"){ hojaComo(); return; }
+  if (d.hoja === "nombre"){ hojaNombre(); return; }
+  if (d.hoja === "borrar"){ hojaBorrar(); return; }
+  if (d.pestana){ S.local.pestana = d.pestana; S.local.ficha = null; if (d.pestana === "socios") SOCIOS = null; pintar(); return; }
+  if (d.ficha){ abrirFicha(d.ficha); return; }
+  if (d.canjear){ canjear(d.canjear); return; }
+  if (d.editarPromo !== undefined){ editarPromo(d.editarPromo); return; }
+  if (d.quitar){ if (confirm("¿Quitar a esta persona del equipo?")) deleteDoc(doc(db, "staff", d.quitar)).then(() => { avisar("Quitado del equipo"); cargarEquipo(); }).catch(er => avisar(textoError(er))); return; }
+  switch (t.id){
+    case "btnRegistro": registrar(); break;
+    case "btnCompletar": completar(); break;
+    case "btnEntrar": entrar(); break;
+    case "btnOlvido": olvido(); break;
+    case "btnSalir": signOut(auth); break;
+    case "btnBorrar": borrarCuenta(); break;
+    case "btnGuardarNombre": {
+      const n = $("#nNombre").value.trim(); if (!n) return;
+      updateDoc(doc(db, "socios", S.user.uid), {nombre: n}).then(() => { cerrarHoja(); avisar("Nombre cambiado"); }).catch(er => avisar(textoError(er))); break;
+    }
+    case "btnEscanear": abrirLector(); break;
+    case "btnBuscar": buscarSocio(); break;
+    case "btnSumar": sumarPuntos(); break;
+    case "btnAjuste": ajusteManual(); break;
+    case "btnOtro": S.local.ficha = null; pintar(); break;
+    case "btnExportar": exportar(); break;
+    case "btnGuardarAjustes": guardarAjustes(); break;
+    case "btnAddEquipo": anadirEquipo(); break;
+  }
+});
+document.addEventListener("change", e => {
+  if (e.target.id === "pMarketing") updateDoc(doc(db, "socios", S.user.uid), {marketing: e.target.checked}).then(() => avisar("Preferencia guardada")).catch(er => avisar(textoError(er)));
+});
+document.addEventListener("input", e => {
+  if (e.target.id === "importe"){ const imp = leerImporte(); $("#vistaPts").textContent = imp > 0 ? `${euros(imp)} → ${ptsDe(imp)} puntos` : "Escribe el importe del ticket"; }
+  if (e.target.id === "filtroSocios" && SOCIOS) pintarListaSocios();
+});
+document.addEventListener("keydown", e => {
+  if (e.key !== "Enter") return;
+  if (e.target.id === "buscar") buscarSocio();
+  if (e.target.id === "ePass") entrar();
+  if (e.target.id === "importe") sumarPuntos();
+});
+
+/* Service worker (para poder instalarla) */
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+</script>
+</body>
+</html>

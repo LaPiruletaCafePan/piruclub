@@ -242,6 +242,12 @@ h1,h2,h3{margin:0}
 <div class="hoja" id="hoja" role="dialog" aria-modal="true"></div>
 <div id="aviso" role="status" aria-live="polite"></div>
 
+<script>
+/* Si la app no consigue arrancar (por ejemplo, no carga Firebase), mostrar un aviso en vez de quedarse girando */
+window.__arranco = false;
+setTimeout(function(){ if (!window.__arranco){ var a = document.getElementById("app");
+  if (a && a.querySelector(".cargando")) a.innerHTML = '<div style="padding:40px 22px;text-align:center;font-family:system-ui,sans-serif"><h2 style="color:#0E6878">No se ha podido abrir La PiruClub</h2><p style="color:#5E7479">Revisa tu conexión a internet y vuelve a intentarlo.</p><button onclick="location.reload()" style="padding:12px 22px;border-radius:999px;border:0;background:#1B97AE;color:#fff;font-weight:700;font-size:16px">Reintentar</button></div>'; } }, 20000);
+</script>
 <script type="module">
 /* =====================================================================
    AJUSTES DEL PROYECTO
@@ -284,6 +290,7 @@ import { getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, collec
   getDocs, onSnapshot, serverTimestamp, Timestamp, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const fb = initializeApp(firebaseConfig);
+window.__arranco = true;
 const auth = getAuth(fb);
 auth.languageCode = "es";
 const db = getFirestore(fb);
@@ -453,7 +460,7 @@ onAuthStateChanged(auth, async user => {
     if (S.socio && S.socio.emailVerificado !== true && auth.currentUser?.emailVerified) comprobarVerificacion();
     if (S.vista === "cargando") S.vista = S.socio ? "inicio" : (S.staff ? "local" : "completar");
     pintar();
-  }, () => {}));
+  }, e => { S.fallo = "No se ha podido leer tu cuenta (" + (e?.code || "error") + "). Si eres el administrador, revisa las reglas de Firestore."; S.vista = "fallo"; pintar(); }));
   let primera = true;
   S.subs.push(onSnapshot(query(collection(db, "socios", user.uid, "movimientos"), orderBy("fecha", "desc"), limit(250)), s => {
     const antes = calcular(S.movs).puntos;
@@ -472,7 +479,7 @@ function pintar(){
   const conNav = ["inicio", "tarjeta", "promos", "perfil", "historial", "local"].includes(S.vista);
   nav.hidden = !conNav; app.classList.toggle("con-nav", conNav);
   const V = {cargando: vCargando, portada: vPortada, registro: vRegistro, entrar: vEntrar, completar: vCompletar,
-    inicio: vInicio, tarjeta: vTarjeta, promos: vPromos, perfil: vPerfil, historial: vHistorial, local: vLocal};
+    fallo: vFallo, inicio: vInicio, tarjeta: vTarjeta, promos: vPromos, perfil: vPerfil, historial: vHistorial, local: vLocal};
   app.innerHTML = (V[S.vista] || vCargando)();
   if (conNav) nav.innerHTML = vNav();
   despues();
@@ -490,6 +497,13 @@ function despues(){
   if (S.vista === "local" && S.local.pestana === "equipo") cargarEquipo();
 }
 
+function vFallo(){
+  return `<div class="toldo" aria-hidden="true"></div><div class="bloque centrado">
+    <h1 class="titulo" style="font-size:26px;margin-top:10px">Algo no ha ido bien</h1>
+    <p class="nota" style="margin:10px 0 18px">${esc(S.fallo || "No se puede conectar.")}</p>
+    <div class="pila"><button class="boton turquesa" type="button" onclick="location.reload()">Reintentar</button>
+    ${S.user ? `<button class="boton" type="button" id="btnSalir">Cerrar sesión</button>` : ""}</div></div>`;
+}
 function vCargando(){ return `<div class="cargando"><div><div class="giro"></div>Cargando…</div></div>`; }
 
 function vNav(){
@@ -1000,24 +1014,4 @@ function editarPromo(id){
     <label class="check"><input type="checkbox" id="pActiva" ${p.activa ? "checked" : ""}><span>Activa (visible para los socios)</span></label>
     <p class="error" id="pError" role="alert"></p>
     <div class="botones">${id ? `<button class="boton peligro peq" type="button" id="btnBorrarPromo">Borrar</button>` : ""}
-      <button class="boton peq" type="button" data-cerrar>Cancelar</button><button class="boton turquesa peq" type="button" id="btnGuardarPromo">Guardar</button></div>`);
-  $("#btnGuardarPromo").onclick = async () => {
-    const datos = {titulo: $("#pTitulo").value.trim(), descripcion: $("#pDesc").value.trim(), tipo: $("#pTipo").value, nivel: $("#pNivel").value,
-      usos: $("#pUsos").value, desde: $("#pDesde").value, hasta: $("#pHasta").value, activa: $("#pActiva").checked};
-    if (!datos.titulo){ $("#pError").textContent = "Ponle un título."; return; }
-    if (datos.desde && datos.hasta && datos.hasta < datos.desde){ $("#pError").textContent = "La fecha «hasta» es anterior a «desde»."; return; }
-    try{
-      if (id) await setDoc(doc(db, "promos", id), datos); else await addDoc(collection(db, "promos"), {...datos, creada: serverTimestamp()});
-      cerrarHoja(); avisar("Promoción guardada");
-    }catch(e){ $("#pError").textContent = textoError(e); }
-  };
-  if (id) $("#btnBorrarPromo").onclick = async () => {
-    if (!confirm("¿Borrar esta promoción? Si solo quieres ocultarla, desmarca «Activa».")) return;
-    try{ await deleteDoc(doc(db, "promos", id)); cerrarHoja(); avisar("Promoción borrada"); }catch(e){ $("#pError").textContent = textoError(e); }
-  };
-}
-
-/* ---------- Socios (admin) ---------- */
-let SOCIOS = null;
-function lSocios(){
-  return `<div class="ficha" style="text-align:center"><div class="cifra-grande" id="totalSocios
+      <button class="bot

@@ -134,6 +134,14 @@ h1,h2,h3{margin:0}
 .etq.bronce{background:color-mix(in srgb,var(--bronce) 25%,var(--fondo));color:#7A4A22}
 .etq.plata{background:color-mix(in srgb,var(--plata) 35%,var(--fondo));color:#4A5860}
 .etq.oro{background:color-mix(in srgb,var(--oro) 30%,var(--fondo));color:#7A5A0A}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .etq.bronce{color:#F0C49A}
+  :root:not([data-theme="light"]) .etq.plata{color:#DCE4E8}
+  :root:not([data-theme="light"]) .etq.oro{color:#F6DE8E}
+}
+:root[data-theme="dark"] .etq.bronce{color:#F0C49A}
+:root[data-theme="dark"] .etq.plata{color:#DCE4E8}
+:root[data-theme="dark"] .etq.oro{color:#F6DE8E}
 .promo.bloqueada{opacity:.6}
 .promo.bloqueada .ic{background:var(--suelo);color:var(--suave)}
 .promo .derecha{margin-left:auto;flex:none}

@@ -243,10 +243,20 @@ h1,h2,h3{margin:0}
 <div id="aviso" role="status" aria-live="polite"></div>
 
 <script>
-/* Si la app no consigue arrancar (por ejemplo, no carga Firebase), mostrar un aviso en vez de quedarse girando */
-window.__arranco = false;
-setTimeout(function(){ if (!window.__arranco){ var a = document.getElementById("app");
-  if (a && a.querySelector(".cargando")) a.innerHTML = '<div style="padding:40px 22px;text-align:center;font-family:system-ui,sans-serif"><h2 style="color:#0E6878">No se ha podido abrir La PiruClub</h2><p style="color:#5E7479">Revisa tu conexión a internet y vuelve a intentarlo.</p><button onclick="location.reload()" style="padding:12px 22px;border-radius:999px;border:0;background:#1B97AE;color:#fff;font-weight:700;font-size:16px">Reintentar</button></div>'; } }, 20000);
+/* Diagnóstico: si la app no consigue arrancar, mostrar el motivo en vez de quedarse girando */
+window.__arranco = false; window.__errores = [];
+window.addEventListener("error", function(e){ window.__errores.push((e.message || "Error") + (e.filename ? " [" + e.filename.split("/").pop() + ":" + (e.lineno || "") + "]" : "")); if (!window.__arranco) setTimeout(mostrarFallo, 300); }, true);
+window.addEventListener("unhandledrejection", function(e){ window.__errores.push("Promesa: " + ((e.reason && (e.reason.code || e.reason.message)) || e.reason)); });
+function mostrarFallo(){
+  if (window.__arranco) return;
+  var a = document.getElementById("app"); if (!a || !a.querySelector(".cargando")) return;
+  var det = window.__errores.length ? window.__errores.join("<br>") : "Sin errores registrados (la conexión con Firebase no responde).";
+  a.innerHTML = '<div style="padding:40px 22px;text-align:center;font-family:system-ui,sans-serif"><h2 style="color:#0E6878">No se ha podido abrir La PiruClub</h2>'
+    + '<p style="color:#5E7479">Haz una captura de esta pantalla y envíasela a quien te ayuda con la app.</p>'
+    + '<p style="font-family:monospace;font-size:12px;text-align:left;background:#f3f8f9;color:#16343A;padding:10px;border-radius:10px;word-break:break-word">' + det.replace(/</g,"&lt;").replace(/&lt;br>/g,"<br>") + '<br>Navegador: ' + navigator.userAgent.replace(/</g,"") + '</p>'
+    + '<button onclick="location.reload()" style="padding:12px 22px;border-radius:999px;border:0;background:#1B97AE;color:#fff;font-weight:700;font-size:16px">Reintentar</button></div>';
+}
+setTimeout(mostrarFallo, 20000);
 </script>
 <script type="module">
 /* =====================================================================
@@ -1004,14 +1014,4 @@ function editarPromo(id){
       <option value="bienvenida" ${p.tipo === "bienvenida" ? "selected" : ""}>Bienvenida (primeros 30 días, una vez)</option>
       <option value="cumple" ${p.tipo === "cumple" ? "selected" : ""}>Cumpleaños (su mes, una vez al año)</option></select></label>
     <div class="dos">
-      <label class="campo"><span>Nivel mínimo</span><select id="pNivel">${ns.map(n => `<option value="${n.id}" ${p.nivel === n.id ? "selected" : ""}>${esc(n.nombre)}</option>`).join("")}</select></label>
-      <label class="campo"><span>Usos por socio</span><select id="pUsos"><option value="una" ${p.usos !== "ilimitada" ? "selected" : ""}>Una vez</option><option value="ilimitada" ${p.usos === "ilimitada" ? "selected" : ""}>Sin límite</option></select></label>
-    </div>
-    <div class="dos">
-      <label class="campo"><span>Desde (opcional)</span><input id="pDesde" type="date" value="${esc(p.desde)}"></label>
-      <label class="campo"><span>Hasta (opcional)</span><input id="pHasta" type="date" value="${esc(p.hasta)}"></label>
-    </div>
-    <label class="check"><input type="checkbox" id="pActiva" ${p.activa ? "checked" : ""}><span>Activa (visible para los socios)</span></label>
-    <p class="error" id="pError" role="alert"></p>
-    <div class="botones">${id ? `<button class="boton peligro peq" type="button" id="btnBorrarPromo">Borrar</button>` : ""}
-      <button class="bot
+      <label class="campo"><span>Nivel mínimo</span><select id="pNivel">${ns.map(n => `<option value="${n.id}" ${p.nivel === n.id ? "selected" : ""}>${esc(n.nombre)}</option>`

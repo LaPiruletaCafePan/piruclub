@@ -279,7 +279,7 @@ const VERSION_LEGAL = "1";
 /* ===================================================================== */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail,
-  signOut, deleteUser, EmailAuthProvider, reauthenticateWithCredential, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  signOut, deleteUser, EmailAuthProvider, reauthenticateWithCredential, sendEmailVerification, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, collection, query, where, orderBy, limit,
   getDocs, onSnapshot, serverTimestamp, Timestamp, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -410,7 +410,10 @@ function nombreNivel(id){ return (S.ajustes.niveles.find(n => n.id === id) || {n
 
 /* ----------------------- Verificación de email ----------------------- */
 const URL_APP = location.origin + location.pathname;
-function enviarVerificacion(u){ return sendEmailVerification(u, {url: URL_APP}); }
+async function enviarVerificacion(u){
+  if (!u.displayName && S.socio?.nombre) await updateProfile(u, {displayName: S.socio.nombre}).catch(() => {});
+  return sendEmailVerification(u, {url: URL_APP});
+}
 let comprobando = false;
 async function comprobarVerificacion(avisarSiNo){
   const u = auth.currentUser; if (!u || comprobando) return;
@@ -616,6 +619,7 @@ async function registrar(){
     S.vista = "cargando"; S.registrando = true;
     datos = {nombre: $("#rNombre").value, nac: $("#rNac").value, mk: $("#rMarketing").checked};
     const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    await updateProfile(cred.user, {displayName: datos.nombre.trim()}).catch(() => {});
     enviarVerificacion(cred.user).catch(() => {});
     await setDoc(doc(db, "socios", cred.user.uid), {
       nombre: datos.nombre.trim(), email, nacimiento: datos.nac,
@@ -1016,6 +1020,4 @@ function editarPromo(id){
 /* ---------- Socios (admin) ---------- */
 let SOCIOS = null;
 function lSocios(){
-  return `<div class="ficha" style="text-align:center"><div class="cifra-grande" id="totalSocios">…</div><small class="nota">socios registrados</small></div>
-    <div class="importe" style="margin:14px 0 8px"><input id="filtroSocios" style="font-size:17px" placeholder="Buscar por nombre o email"></div>
-    <button cla
+  return `<div class="ficha" style="text-align:center"><div class="cifra-grande" id="totalSocios

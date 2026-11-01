@@ -299,6 +299,9 @@ const DEFECTO = {
   ]
 };
 const VERSION_LEGAL = "1";
+// Regalo de cumpleaños: días antes y después del cumpleaños en que se puede usar (3 + el día + 3 = una semana)
+const CUMPLE_DIAS_ANTES = 3;
+const CUMPLE_DIAS_DESPUES = 3;
 
 /* ===================================================================== */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -394,6 +397,21 @@ onSnapshot(collection(db, "promos"), s => {
 }, () => {});
 
 /* ---------------------------- Cálculos ---------------------------- */
+// Devuelve {inicio, fin, dia} (fechas en milisegundos UTC) si hoy está en la semana del cumpleaños; si no, null
+function semanaCumple(nacimiento){
+  if (!nacimiento || !/^\d{4}-\d{2}-\d{2}$/.test(nacimiento)) return null;
+  const [y, m, d] = hoyISO().split("-").map(Number), hoy = Date.UTC(y, m - 1, d);
+  const mes = +nacimiento.slice(5, 7), dia = +nacimiento.slice(8, 10);
+  for (const anio of [y - 1, y, y + 1]){
+    let fd = dia;
+    if (mes === 2 && dia === 29 && !((anio % 4 === 0 && anio % 100 !== 0) || anio % 400 === 0)) fd = 28;
+    const c = Date.UTC(anio, mes - 1, fd);
+    const inicio = c - CUMPLE_DIAS_ANTES * DIA, fin = c + CUMPLE_DIAS_DESPUES * DIA;
+    if (hoy >= inicio && hoy <= fin) return {inicio, fin, dia: c};
+  }
+  return null;
+}
+const fechaUTC = t => new Date(t).toLocaleDateString("es-ES", {day: "numeric", month: "long", timeZone: "UTC"});
 function niveles(){ return [...S.ajustes.niveles].sort((a, b) => a.min - b.min); }
 function calcular(movs){
   const ahora = Date.now();
@@ -421,8 +439,9 @@ function estadoPromo(p, socio, calc){
   if (p.hasta && hoy > p.hasta) return "oculta";
   const usadas = calc.canjes.filter(c => c.promoId === p.id);
   if (p.tipo === "cumple"){
-    if (!socio?.nacimiento || +socio.nacimiento.slice(5, 7) !== mesActual()) return "oculta";
-    if (usadas.some(c => new Date(ms(c.fecha) || Date.now()).getFullYear() === anioActual())) return "usada";
+    const sc = semanaCumple(socio?.nacimiento);
+    if (!sc) return "oculta";
+    if (usadas.some(c => Math.abs((ms(c.fecha) || Date.now()) - sc.dia) < 60 * DIA)) return "usada";
   } else if (p.tipo === "bienvenida"){
     if (usadas.length) return "usada";
     if (Date.now() - (ms(socio?.alta) || Date.now()) > 30 * DIA) return "oculta";
@@ -710,7 +729,7 @@ function cabecera(c){
 function tarjetaPromo(p, estado){
   const ic = p.tipo === "cumple" ? I.pastel : (estado === "bloqueada" ? I.candado : I.regalo);
   const meta = [];
-  if (p.tipo === "cumple") meta.push(`<span class="etq">Tu cumpleaños</span>`);
+  if (p.tipo === "cumple"){ const sc = semanaCumple(S.socio?.nacimiento); meta.push(`<span class="etq">¡Feliz cumpleaños!</span>`); if (sc) meta.push(`<span class="etq">Hasta el ${fechaUTC(sc.fin)}</span>`); }
   else if (p.tipo === "bienvenida") meta.push(`<span class="etq">Bienvenida</span>`);
   else meta.push(`<span class="etq ${p.nivel}">Nivel ${esc(nombreNivel(p.nivel))}</span>`);
   if (p.hasta) meta.push(`<span class="etq">Hasta el ${fechaCorta(new Date(p.hasta + "T12:00:00"))}</span>`);
@@ -940,13 +959,13 @@ async function abrirFicha(uid){
 function fichaSocio(f){
   const c = calcular(f.movs);
   const promos = S.promos.map(p => ({p, e: estadoPromo(p, f, c)})).filter(x => x.e === "disponible");
-  const cumple = f.nacimiento && +f.nacimiento.slice(5, 7) === mesActual();
+  const cumple = semanaCumple(f.nacimiento);
   const ult = f.movs.filter(m => m.tipo !== "canje").slice(0, 4);
   return `<div class="ficha">
     <div class="quien"><span class="bola" style="background:${COLOR[c.nivel.id]}">${esc((f.nombre || "?").charAt(0).toUpperCase())}</span>
       <div><h3>${esc(f.nombre)}</h3><small class="nota">Nº ${numSocio(f.numero)}</small></div></div>
     <div class="datos"><div><b>${esc(c.nivel.nombre)}</b><small>Nivel</small></div><div><b>${c.puntos}</b><small>Puntos</small></div><div><b>${f.movs.filter(m => m.tipo === "suma").length}</b><small>Visitas</small></div></div>
-    ${cumple ? `<div class="aviso-cumple">🎂 ¡Este mes es su cumpleaños!</div>` : ""}
+    ${cumple ? `<div class="aviso-cumple">🎂 ¡Es la semana de su cumpleaños! (${fechaUTC(cumple.dia)})</div>` : ""}
     ${f.emailVerificado !== true ? `<div class="aviso-cumple" style="color:var(--suave);background:var(--suelo)">Email sin confirmar: no puede canjear el regalo de bienvenida hasta confirmarlo.</div>` : ""}
   </div>
   <div class="seccion-t"><h2 class="titulo">Sumar puntos</h2></div>
@@ -1020,7 +1039,7 @@ function editarPromo(id){
     <label class="campo"><span>Tipo</span><select id="pTipo">
       <option value="normal" ${p.tipo === "normal" ? "selected" : ""}>Normal (según nivel)</option>
       <option value="bienvenida" ${p.tipo === "bienvenida" ? "selected" : ""}>Bienvenida (primeros 30 días, una vez)</option>
-      <option value="cumple" ${p.tipo === "cumple" ? "selected" : ""}>Cumpleaños (su mes, una vez al año)</option></select></label>
+      <option value="cumple" ${p.tipo === "cumple" ? "selected" : ""}>Cumpleaños (su semana, una vez al año)</option></select></label>
     <div class="dos">
       <label class="campo"><span>Nivel mínimo</span><select id="pNivel">${ns.map(n => `<option value="${n.id}" ${p.nivel === n.id ? "selected" : ""}>${esc(n.nombre)}</option>`).join("")}</select></label>
       <label class="campo"><span>Usos por socio</span><select id="pUsos"><option value="una" ${p.usos !== "ilimitada" ? "selected" : ""}>Una vez</option><option value="ilimitada" ${p.usos === "ilimitada" ? "selected" : ""}>Sin límite</option></select></label>

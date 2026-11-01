@@ -111,6 +111,10 @@ h1,h2,h3{margin:0}
 .siguiente{margin:10px 0 0;font-size:14px;opacity:.95}
 .caduca{display:inline-block;margin:10px 0 0;padding:5px 11px;border-radius:999px;background:rgba(255,255,255,.15);font-size:13px;font-weight:600}
 
+.verificar{margin:0 0 14px;padding:14px;border-radius:18px;background:color-mix(in srgb,var(--piruleta) 10%,var(--fondo));border:1.5px solid color-mix(in srgb,var(--piruleta) 40%,var(--fondo))}
+.verificar b{color:var(--tinta)}
+.verificar p{margin:4px 0 0;font-size:14.5px;color:var(--suave)}
+
 /* ---------- Tarjetas de acceso rápido ---------- */
 .rejilla{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .mosaico{display:flex;flex-direction:column;gap:12px;align-items:flex-start;padding:16px;border-radius:18px;border:1.5px solid var(--linea);background:var(--fondo);cursor:pointer;text-align:left;min-height:110px}
@@ -275,7 +279,7 @@ const VERSION_LEGAL = "1";
 /* ===================================================================== */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail,
-  signOut, deleteUser, EmailAuthProvider, reauthenticateWithCredential } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  signOut, deleteUser, EmailAuthProvider, reauthenticateWithCredential, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, collection, query, where, orderBy, limit,
   getDocs, onSnapshot, serverTimestamp, Timestamp, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -397,11 +401,37 @@ function estadoPromo(p, socio, calc){
   } else if (p.tipo === "bienvenida"){
     if (usadas.length) return "usada";
     if (Date.now() - (ms(socio?.alta) || Date.now()) > 30 * DIA) return "oculta";
+    if (socio?.emailVerificado !== true && !(socio?.id && socio.id === S.user?.uid && auth.currentUser?.emailVerified)) return "verificar";
   } else if (p.usos !== "ilimitada" && usadas.length) return "usada";
   if ((ORDEN[p.nivel] ?? 0) > (ORDEN[calc.nivel.id] ?? 0)) return "bloqueada";
   return "disponible";
 }
 function nombreNivel(id){ return (S.ajustes.niveles.find(n => n.id === id) || {nombre: may(id)}).nombre; }
+
+/* ----------------------- Verificación de email ----------------------- */
+const URL_APP = location.origin + location.pathname;
+function enviarVerificacion(u){ return sendEmailVerification(u, {url: URL_APP}); }
+let comprobando = false;
+async function comprobarVerificacion(avisarSiNo){
+  const u = auth.currentUser; if (!u || comprobando) return;
+  comprobando = true;
+  try{
+    await u.reload();
+    if (auth.currentUser?.emailVerified){
+      await auth.currentUser.getIdToken(true);
+      if (S.socio && S.socio.emailVerificado !== true) await updateDoc(doc(db, "socios", u.uid), {emailVerificado: true});
+      if (avisarSiNo !== undefined) avisar("¡Email confirmado! Gracias");
+    } else if (avisarSiNo) avisar("Aún no aparece confirmado. Revisa tu correo");
+  }catch(e){ if (avisarSiNo) avisar(textoError(e)); }
+  finally{ comprobando = false; pintar(); }
+}
+document.addEventListener("visibilitychange", () => { if (!document.hidden && auth.currentUser && S.socio && S.socio.emailVerificado !== true) comprobarVerificacion(); });
+const emailOk = () => !!auth.currentUser?.emailVerified || S.socio?.emailVerificado === true;
+function bannerVerificar(){
+  if (!S.user || emailOk()) return "";
+  return `<div class="verificar"><b>Confirma tu email</b><p>Te hemos enviado un enlace a <b>${esc(S.user.email)}</b>. Al confirmarlo podrás usar tu regalo de bienvenida. Mira también en «Spam» o «Promociones».</p>
+    <div class="botones" style="justify-content:flex-start;margin-top:10px"><button class="boton turquesa peq" type="button" id="btnYaVerifique">Ya lo he confirmado</button><button class="boton peq" type="button" id="btnReenviar">Reenviar email</button></div></div>`;
+}
 
 /* ------------------------------ Sesión ------------------------------ */
 onAuthStateChanged(auth, async user => {
@@ -413,9 +443,11 @@ onAuthStateChanged(auth, async user => {
     const st = await getDoc(doc(db, "staff", user.uid));
     S.staff = st.exists() ? st.data() : null;
   }catch(e){ S.staff = null; }
+  if (!user.emailVerified) setTimeout(() => comprobarVerificacion(), 1500);
   S.subs.push(onSnapshot(doc(db, "socios", user.uid), s => {
     S.socio = s.exists() ? {id: s.id, ...s.data()} : null;
     if (S.registrando && !S.socio) return;
+    if (S.socio && S.socio.emailVerificado !== true && auth.currentUser?.emailVerified) comprobarVerificacion();
     if (S.vista === "cargando") S.vista = S.socio ? "inicio" : (S.staff ? "local" : "completar");
     pintar();
   }, () => {}));
@@ -584,6 +616,7 @@ async function registrar(){
     S.vista = "cargando"; S.registrando = true;
     datos = {nombre: $("#rNombre").value, nac: $("#rNac").value, mk: $("#rMarketing").checked};
     const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    enviarVerificacion(cred.user).catch(() => {});
     await setDoc(doc(db, "socios", cred.user.uid), {
       nombre: datos.nombre.trim(), email, nacimiento: datos.nac,
       numero: String(Math.floor(100000000 + Math.random() * 900000000)),
@@ -646,7 +679,8 @@ function tarjetaPromo(p, estado){
   else meta.push(`<span class="etq ${p.nivel}">Nivel ${esc(nombreNivel(p.nivel))}</span>`);
   if (p.hasta) meta.push(`<span class="etq">Hasta el ${fechaCorta(new Date(p.hasta + "T12:00:00"))}</span>`);
   if (estado === "bloqueada") meta.push(`<span class="etq">Desbloquéala en ${esc(nombreNivel(p.nivel))}</span>`);
-  return `<div class="promo ${estado === "bloqueada" ? "bloqueada" : ""}"><span class="ic">${ic}</span>
+  if (estado === "verificar") meta.push(`<span class="etq">Confirma tu email para usarla</span>`);
+  return `<div class="promo ${estado === "bloqueada" || estado === "verificar" ? "bloqueada" : ""}"><span class="ic">${ic}</span>
     <div><b>${esc(p.titulo)}</b>${p.descripcion ? `<p>${esc(p.descripcion)}</p>` : ""}<div class="meta">${meta.join("")}</div></div></div>`;
 }
 function listaPromos(c, incluirBloqueadas){
@@ -654,6 +688,7 @@ function listaPromos(c, incluirBloqueadas){
   for (const p of S.promos){
     const e = estadoPromo(p, S.socio, c);
     if (e === "disponible") d.push(tarjetaPromo(p, e));
+    else if (e === "verificar") d.push(tarjetaPromo(p, e));
     else if (e === "bloqueada" && incluirBloqueadas) b.push(tarjetaPromo(p, e));
   }
   return {d, b};
@@ -661,6 +696,7 @@ function listaPromos(c, incluirBloqueadas){
 function vInicio(){
   const c = calcular(S.movs), {d} = listaPromos(c, false);
   return `${cabecera(c)}<div class="bloque">
+    ${bannerVerificar()}
     <div class="rejilla">
       <button class="mosaico" type="button" data-ir="tarjeta">${I.qr}<b>Usar mi tarjeta</b></button>
       <button class="mosaico" type="button" data-ir="promos">${I.regalo}<b>Mis promociones</b></button>
@@ -685,6 +721,7 @@ function bloqueNiveles(c){
 function vPromos(){
   const c = calcular(S.movs), {d, b} = listaPromos(c, true);
   return `${cabeceraSimple("Mis promociones", "Enséñale al camarero la que quieras usar al pagar.")}<div class="bloque">
+    ${bannerVerificar()}
     ${d.length ? d.join("") : `<div class="vacio">Ahora mismo no tienes promociones disponibles.</div>`}
     ${b.length ? `<div class="seccion-t"><h2 class="titulo">Sube de nivel y desbloquea</h2></div>${b.join("")}` : ""}
   </div>`;
@@ -723,7 +760,7 @@ function vPerfil(){
   const s = S.socio || {};
   return `${cabeceraSimple("Mi perfil", "")}<div class="bloque">
     <div class="fila"><div class="txt"><small>Nombre</small><b>${esc(s.nombre)}</b></div><button class="boton peq" type="button" data-hoja="nombre">Cambiar</button></div>
-    <div class="fila"><div class="txt"><small>Email</small><b>${esc(S.user?.email)}</b></div></div>
+    <div class="fila"><div class="txt"><small>Email</small><b>${esc(S.user?.email)}</b><small>${emailOk() ? "Confirmado ✓" : "Sin confirmar"}</small></div>${emailOk() ? "" : `<button class="boton peq" type="button" id="btnReenviar">Confirmar</button>`}</div>
     <div class="fila"><div class="txt"><small>Número de socio</small><b>${numSocio(s.numero)}</b></div></div>
     <div class="fila"><div class="txt"><small>Cumpleaños</small><b>${s.nacimiento ? fechaCorta(new Date(s.nacimiento + "T12:00:00")) : "Sin indicar"}</b></div></div>
     <div class="fila"><div class="txt"><small>Socio desde</small><b>${fecha(s.alta)}</b></div></div>
@@ -874,6 +911,7 @@ function fichaSocio(f){
       <div><h3>${esc(f.nombre)}</h3><small class="nota">Nº ${numSocio(f.numero)}</small></div></div>
     <div class="datos"><div><b>${esc(c.nivel.nombre)}</b><small>Nivel</small></div><div><b>${c.puntos}</b><small>Puntos</small></div><div><b>${f.movs.filter(m => m.tipo === "suma").length}</b><small>Visitas</small></div></div>
     ${cumple ? `<div class="aviso-cumple">🎂 ¡Este mes es su cumpleaños!</div>` : ""}
+    ${f.emailVerificado !== true ? `<div class="aviso-cumple" style="color:var(--suave);background:var(--suelo)">Email sin confirmar: no puede canjear el regalo de bienvenida hasta confirmarlo.</div>` : ""}
   </div>
   <div class="seccion-t"><h2 class="titulo">Sumar puntos</h2></div>
   <div class="importe"><input id="importe" type="text" inputmode="decimal" placeholder="0,00 €" autocomplete="off"></div>
@@ -980,141 +1018,4 @@ let SOCIOS = null;
 function lSocios(){
   return `<div class="ficha" style="text-align:center"><div class="cifra-grande" id="totalSocios">…</div><small class="nota">socios registrados</small></div>
     <div class="importe" style="margin:14px 0 8px"><input id="filtroSocios" style="font-size:17px" placeholder="Buscar por nombre o email"></div>
-    <button class="boton" type="button" id="btnExportar">Descargar copia (Excel / CSV)</button>
-    <div id="listaSocios" style="margin-top:10px"></div>`;
-}
-async function cargarSocios(){
-  try{
-    if (!SOCIOS){
-      const r = await getDocs(query(collection(db, "socios"), orderBy("alta", "desc"), limit(2000)));
-      SOCIOS = r.docs.map(d => ({id: d.id, ...d.data()}));
-    }
-    if (S.local.pestana !== "socios" || !$("#totalSocios")) return;
-    $("#totalSocios").textContent = SOCIOS.length;
-    pintarListaSocios();
-  }catch(e){ const l = $("#listaSocios"); if (l) l.innerHTML = `<p class="error">${textoError(e)}</p>`; }
-}
-function pintarListaSocios(){
-  const f = ($("#filtroSocios")?.value || "").toLowerCase();
-  const l = SOCIOS.filter(s => !f || (s.nombre || "").toLowerCase().includes(f) || (s.email || "").toLowerCase().includes(f)).slice(0, 100);
-  $("#listaSocios").innerHTML = l.map(s => `<div class="fila"><div class="txt"><b>${esc(s.nombre)}</b><small>${esc(s.email)} · alta ${fecha(s.alta)}${s.ultimaVisita ? " · última visita " + fecha(s.ultimaVisita) : ""}</small></div>
-    <button class="boton peq" type="button" data-ficha="${s.id}">Ver</button></div>`).join("") || `<div class="vacio">Sin resultados.</div>`;
-}
-function exportar(){
-  if (!SOCIOS) return;
-  const cab = ["Número", "Nombre", "Email", "Nacimiento", "Alta", "Última visita", "Puntos aprox.", "Acepta emails"];
-  const c = v => `"${String(v ?? "").replace(/"/g, '""')}"`;
-  const fl = SOCIOS.map(s => [s.numero, s.nombre, s.email, s.nacimiento, fecha(s.alta), s.ultimaVisita ? fecha(s.ultimaVisita) : "", s.puntosAprox ?? "", s.marketing ? "Sí" : "No"].map(c).join(";"));
-  const blob = new Blob(["\ufeff" + [cab.map(c).join(";"), ...fl].join("\r\n")], {type: "text/csv;charset=utf-8"});
-  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `socios-piruclub-${hoyISO()}.csv`; a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
-}
-
-/* ---------- Ajustes (admin) ---------- */
-function lAjustes(){
-  const a = S.ajustes, ns = niveles();
-  return `<div class="dos">
-      <label class="campo"><span>Puntos por euro</span><input id="aPPE" type="number" step="0.5" min="0.5" value="${a.puntosPorEuro}"></label>
-      <label class="campo"><span>Caducidad (meses)</span><input id="aCad" type="number" min="1" max="36" value="${a.caducidadMeses}"></label>
-    </div>
-    ${ns.map((n, i) => `<div class="ficha" style="margin-bottom:10px">
-      <div class="dos"><label class="campo"><span>Nombre del nivel</span><input id="aN${i}" value="${esc(n.nombre)}"></label>
-      <label class="campo"><span>Desde (puntos)</span><input id="aM${i}" type="number" min="0" value="${n.min}" ${i === 0 ? "disabled" : ""}></label></div>
-      <label class="campo" style="margin:0"><span>Beneficios (los ven los socios)</span><textarea id="aB${i}">${esc(n.beneficios || "")}</textarea></label></div>`).join("")}
-    <p class="error" id="aError" role="alert"></p>
-    <button class="boton rosa" type="button" id="btnGuardarAjustes">Guardar ajustes</button>
-    <p class="nota" style="margin:12px 0 0">Los cambios de puntos por euro y caducidad se aplican a las visitas nuevas.</p>`;
-}
-async function guardarAjustes(){
-  const ns = niveles(), err = $("#aError");
-  const nuevos = ns.map((n, i) => ({id: n.id, nombre: $("#aN" + i).value.trim() || n.nombre, min: i === 0 ? 0 : parseInt($("#aM" + i).value, 10) || 0, beneficios: $("#aB" + i).value.trim()}));
-  if (!(nuevos[1].min > 0 && nuevos[2].min > nuevos[1].min)){ err.textContent = "Cada nivel debe empezar en más puntos que el anterior."; return; }
-  const ppe = parseFloat($("#aPPE").value), cad = parseInt($("#aCad").value, 10);
-  if (!(ppe > 0) || !(cad >= 1)){ err.textContent = "Revisa los puntos por euro y la caducidad."; return; }
-  try{ await setDoc(doc(db, "config", "ajustes"), {puntosPorEuro: ppe, caducidadMeses: cad, niveles: nuevos}); avisar("Ajustes guardados"); }
-  catch(e){ err.textContent = textoError(e); }
-}
-
-/* ---------- Equipo (admin) ---------- */
-function lEquipo(){
-  return `<p class="nota" style="margin:0 0 12px">Para añadir a un empleado: que se registre primero como socio en la app y te diga su número de socio.</p>
-    <div class="importe" style="margin-bottom:8px"><input id="eqNum" style="font-size:18px" inputmode="numeric" placeholder="Número de socio"></div>
-    <button class="boton rosa" type="button" id="btnAddEquipo">Añadir como empleado</button>
-    <p class="error" id="eqError" role="alert" style="margin-top:10px"></p>
-    <div id="listaEquipo"></div>`;
-}
-async function cargarEquipo(){
-  try{
-    const r = await getDocs(collection(db, "staff"));
-    const l = $("#listaEquipo"); if (!l) return;
-    l.innerHTML = r.docs.map(d => { const x = d.data(); return `<div class="fila"><div class="txt"><b>${esc(x.nombre || "Sin nombre")}</b><small>${x.rol === "admin" ? "Administrador" : "Empleado"}</small></div>
-      ${d.id !== S.user.uid && x.rol !== "admin" ? `<button class="boton peligro peq" type="button" data-quitar="${d.id}">Quitar</button>` : ""}</div>`; }).join("");
-  }catch(e){ const l = $("#listaEquipo"); if (l) l.innerHTML = `<p class="error">${textoError(e)}</p>`; }
-}
-async function anadirEquipo(){
-  const n = $("#eqNum").value.replace(/\D/g, ""), err = $("#eqError"); err.textContent = "";
-  if (!n) return;
-  try{
-    const r = await getDocs(query(collection(db, "socios"), where("numero", "==", n)));
-    if (r.empty){ err.textContent = "No hay ningún socio con ese número."; return; }
-    const s = r.docs[0];
-    await setDoc(doc(db, "staff", s.id), {rol: "empleado", nombre: s.data().nombre || ""});
-    $("#eqNum").value = ""; avisar(`${s.data().nombre} ya es empleado`); cargarEquipo();
-  }catch(e){ err.textContent = textoError(e); }
-}
-
-/* ------------------------- Eventos globales ------------------------- */
-document.addEventListener("click", e => {
-  const t = e.target.closest("button, a"); if (!t) return;
-  const d = t.dataset;
-  if (d.ir !== undefined){ ir(d.ir); return; }
-  if (d.legal){ hojaLegal(d.legal); return; }
-  if (d.cerrar !== undefined){ cerrarHoja(); return; }
-  if (d.hoja === "como"){ hojaComo(); return; }
-  if (d.hoja === "nombre"){ hojaNombre(); return; }
-  if (d.hoja === "borrar"){ hojaBorrar(); return; }
-  if (d.pestana){ S.local.pestana = d.pestana; S.local.ficha = null; if (d.pestana === "socios") SOCIOS = null; pintar(); return; }
-  if (d.ficha){ abrirFicha(d.ficha); return; }
-  if (d.canjear){ canjear(d.canjear); return; }
-  if (d.editarPromo !== undefined){ editarPromo(d.editarPromo); return; }
-  if (d.quitar){ if (confirm("¿Quitar a esta persona del equipo?")) deleteDoc(doc(db, "staff", d.quitar)).then(() => { avisar("Quitado del equipo"); cargarEquipo(); }).catch(er => avisar(textoError(er))); return; }
-  switch (t.id){
-    case "btnRegistro": registrar(); break;
-    case "btnCompletar": completar(); break;
-    case "btnEntrar": entrar(); break;
-    case "btnOlvido": olvido(); break;
-    case "btnSalir": signOut(auth); break;
-    case "btnBorrar": borrarCuenta(); break;
-    case "btnGuardarNombre": {
-      const n = $("#nNombre").value.trim(); if (!n) return;
-      updateDoc(doc(db, "socios", S.user.uid), {nombre: n}).then(() => { cerrarHoja(); avisar("Nombre cambiado"); }).catch(er => avisar(textoError(er))); break;
-    }
-    case "btnEscanear": abrirLector(); break;
-    case "btnBuscar": buscarSocio(); break;
-    case "btnSumar": sumarPuntos(); break;
-    case "btnAjuste": ajusteManual(); break;
-    case "btnOtro": S.local.ficha = null; pintar(); break;
-    case "btnExportar": exportar(); break;
-    case "btnGuardarAjustes": guardarAjustes(); break;
-    case "btnAddEquipo": anadirEquipo(); break;
-  }
-});
-document.addEventListener("change", e => {
-  if (e.target.id === "pMarketing") updateDoc(doc(db, "socios", S.user.uid), {marketing: e.target.checked}).then(() => avisar("Preferencia guardada")).catch(er => avisar(textoError(er)));
-});
-document.addEventListener("input", e => {
-  if (e.target.id === "importe"){ const imp = leerImporte(); $("#vistaPts").textContent = imp > 0 ? `${euros(imp)} → ${ptsDe(imp)} puntos` : "Escribe el importe del ticket"; }
-  if (e.target.id === "filtroSocios" && SOCIOS) pintarListaSocios();
-});
-document.addEventListener("keydown", e => {
-  if (e.key !== "Enter") return;
-  if (e.target.id === "buscar") buscarSocio();
-  if (e.target.id === "ePass") entrar();
-  if (e.target.id === "importe") sumarPuntos();
-});
-
-/* Service worker (para poder instalarla) */
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
-</script>
-</body>
-</html>
+    <button cla

@@ -57,6 +57,7 @@ h1,h2,h3{margin:0}
 /* ---------- Botones y formularios ---------- */
 .boton{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px 18px;border-radius:999px;border:1.5px solid var(--linea);
   background:var(--fondo);color:var(--tinta);font-weight:700;font-size:16px;cursor:pointer;text-decoration:none}
+.boton svg{width:22px;height:22px;flex:none}
 .boton.rosa{background:var(--piruleta);border-color:var(--piruleta);color:#fff}
 .boton.turquesa{background:var(--turquesa);border-color:var(--turquesa);color:#fff}
 .boton.peq{width:auto;padding:9px 15px;font-size:14.5px}
@@ -222,6 +223,10 @@ h1,h2,h3{margin:0}
 .fila .txt b{display:block}
 .fila .txt small{color:var(--suave)}
 .cifra-grande{font-family:"Baloo 2",sans-serif;font-weight:800;font-size:30px;color:var(--turquesa-osc);line-height:1}
+
+.resultado{width:64px;height:64px;border-radius:50%;margin:4px auto 12px;display:grid;place-items:center;font-size:32px;font-weight:800;color:#fff}
+.resultado.ok{background:var(--ok)}
+.resultado.mal{background:var(--aviso)}
 
 /* ---------- Pantalla de bienvenida animada ---------- */
 #splash{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;
@@ -840,7 +845,7 @@ function vHistorial(){
   const c = calcular(S.movs);
   const items = [];
   for (const m of S.movs){
-    if (m.tipo === "suma") items.push({t: ms(m.fecha) || Date.now(), html: mov(I.taza, "Consumo en La Piruleta", `${fecha(m.fecha)}${m.importe ? " · " + euros(m.importe) : ""}`, `+${m.puntos} pts`, "mas")});
+    if (m.tipo === "suma") items.push({t: ms(m.fecha) || Date.now(), html: mov(I.taza, "Consumo en La Piruleta", `${fecha(m.fecha)}${m.importe ? " · " + euros(m.importe) : ""}${m.ticket ? " · Ticket " + esc(m.ticket) : ""}`, `+${m.puntos} pts`, "mas")});
     else if (m.tipo === "ajuste") items.push({t: ms(m.fecha) || Date.now(), html: mov(I.info, m.motivo || "Ajuste de puntos", fecha(m.fecha), `${m.puntos > 0 ? "+" : ""}${m.puntos} pts`, m.puntos > 0 ? "mas" : "menos")});
     else if (m.tipo === "canje") items.push({t: ms(m.fecha) || Date.now(), html: mov(I.regalo, "Promoción usada", `${esc(m.promoTitulo || "")} · ${fecha(m.fecha)}`, "", "")});
   }
@@ -953,25 +958,134 @@ function lEscanear(){
     <div class="importe" style="margin-bottom:8px"><input id="buscar" style="font-size:18px" placeholder="123 456 789 o email" autocomplete="off"></div>
     <button class="boton" type="button" id="btnBuscar">Buscar</button>
     <p class="error" id="bsError" role="alert" style="margin-top:10px"></p>
-    <div id="resultados"></div>`;
+    <div id="resultados"></div>
+    <div class="seccion-t"><h2 class="titulo">Devoluciones</h2></div>
+    <button class="boton" type="button" id="btnComprobar">Comprobar ticket</button>`;
 }
 let lector = null;
 async function cargarScript(src){
   if (document.querySelector(`script[src="${src}"]`)) return;
   await new Promise((ok, mal) => { const s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = mal; document.head.appendChild(s); });
 }
-async function abrirLector(){
-  abrirHoja(`<h2>Escanear tarjeta</h2><p class="nota">Apunta al código QR de la tarjeta del socio.</p><div class="lector" id="lector" style="margin-top:12px"></div>
+// Formato del QR del ticket de TPV Factu:  PTK1;<número de ticket>;<total con 2 decimales>;<AAAA-MM-DD>;<HH:MM>
+function leerTicketQR(texto){
+  const p = String(texto || "").trim().split(";");
+  if (p[0] !== "PTK1" || p.length < 5) return null;
+  const numero = p[1].trim(), total = parseFloat(p[2].replace(",", ".")), fechaT = p[3].trim(), hora = (p[4] || "").trim();
+  if (!numero || !isFinite(total) || !/^\d{4}-\d{2}-\d{2}$/.test(fechaT)) return null;
+  return {numero, total: Math.round(total * 100) / 100, fecha: fechaT, hora};
+}
+const idTicket = n => String(n).replace(/[^A-Za-z0-9_-]/g, "_").slice(0, 120);
+let tLeido = 0;
+async function abrirLector(modo = "tarjeta"){
+  tLeido = 0; let procesando = false;
+  const titulos = {tarjeta: ["Escanear tarjeta", "Apunta al código QR de la tarjeta del socio."],
+                   ticket: ["Escanear ticket", "Apunta al código QR que hay al final del ticket."],
+                   comprobar: ["Comprobar ticket", "Apunta al código QR del ticket que quieres comprobar."]};
+  abrirHoja(`<h2>${titulos[modo][0]}</h2><p class="nota">${titulos[modo][1]}</p><div class="lector" id="lector" style="margin-top:12px"></div>
     <div class="botones"><button class="boton peq" type="button" data-cerrar>Cancelar</button></div>`);
   try{
     await cargarScript("https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js");
     lector = new Html5Qrcode("lector");
     await lector.start({facingMode: "environment"}, {fps: 10, qrbox: {width: 230, height: 230}}, async texto => {
-      const m = /^PIRU:([A-Za-z0-9]+)$/.exec(texto.trim());
-      if (!m){ avisar("Este código no es una tarjeta de La PiruClub"); return; }
-      cerrarHoja(); await abrirFicha(m[1]);
+      if (procesando || Date.now() - tLeido < 1500) return;
+      tLeido = Date.now();
+      const tarjeta = /^PIRU:([A-Za-z0-9]+)$/.exec(texto.trim());
+      const ticket = leerTicketQR(texto);
+      if (modo === "tarjeta"){
+        if (ticket){ avisar("Primero escanea la tarjeta del socio"); return; }
+        if (!tarjeta){ avisar("Este código no es una tarjeta de La PiruClub"); return; }
+        procesando = true; cerrarHoja(); await abrirFicha(tarjeta[1]); return;
+      }
+      if (!ticket){ avisar(tarjeta ? "Eso es una tarjeta de socio. Escanea el QR del ticket" : "Este código no es un ticket de TPV Factu"); return; }
+      procesando = true; cerrarHoja();
+      if (modo === "ticket") await sumarTicket(ticket); else await comprobarTicket(ticket.numero, ticket);
     }, () => {});
-  }catch(e){ $("#lector").innerHTML = `<div class="vacio" style="color:#fff">No se ha podido abrir la cámara. Revisa los permisos del navegador o busca por número de socio.</div>`; }
+  }catch(e){ $("#lector").innerHTML = `<div class="vacio" style="color:#fff">No se ha podido abrir la cámara. Revisa los permisos del navegador.</div>`; }
+}
+
+/* ---------- Sumar puntos con el QR del ticket ---------- */
+async function sumarTicket(tk){
+  const f = S.local.ficha;
+  if (!f){ avisar("Primero escanea la tarjeta del socio"); return; }
+  if (tk.fecha !== hoyISO()){ hojaResultado("No se puede usar", `Este ticket es del <b>${fechaUTC(Date.parse(tk.fecha + "T00:00:00Z"))}</b>. Solo se pueden sumar puntos de tickets de <b>hoy</b>.`, false); return; }
+  if (!(tk.total > 0) || tk.total > 500){ hojaResultado("Importe no válido", `El ticket indica ${euros(tk.total)}. Revisa el ticket o suma los puntos a mano.`, false); return; }
+  const id = idTicket(tk.numero);
+  try{
+    const ya = await getDoc(doc(db, "tickets", id));
+    if (ya.exists()){
+      const d = ya.data();
+      hojaResultado("Ticket ya usado", d.estado === "anulado"
+        ? `El ticket <b>${esc(tk.numero)}</b> se anuló por una devolución. No se puede volver a usar.`
+        : `El ticket <b>${esc(tk.numero)}</b> ya sumó <b>${d.puntos} puntos</b> a <b>${esc(d.socioNombre)}</b> el ${fecha(d.escaneado)}.`, false);
+      return;
+    }
+    const pts = ptsDe(tk.total), caduca = caducaDesde();
+    const lote = writeBatch(db);
+    lote.set(doc(db, "tickets", id), {numero: tk.numero, total: tk.total, fechaTicket: tk.fecha, hora: tk.hora, puntos: pts,
+      socioId: f.id, socioNombre: f.nombre || "", movId: "tk_" + id, estado: "usado", escaneado: serverTimestamp(), por: S.user.uid, porNombre: S.staff.nombre || ""});
+    lote.set(doc(db, "socios", f.id, "movimientos", "tk_" + id), {tipo: "suma", puntos: pts, importe: tk.total, ticket: tk.numero,
+      fecha: serverTimestamp(), caduca, por: S.user.uid, porNombre: S.staff.nombre || ""});
+    await lote.commit();
+    const c = calcular(f.movs);
+    await updateDoc(doc(db, "socios", f.id), {ultimaVisita: serverTimestamp(), puntosAprox: c.puntos + pts}).catch(() => {});
+    await abrirFicha(f.id);
+    hojaResultado(`+${pts} puntos`, `Ticket <b>${esc(tk.numero)}</b> · ${euros(tk.total)}<br>Sumados a <b>${esc(f.nombre)}</b>.`, true);
+  }catch(e){
+    if (e?.code === "permission-denied") hojaResultado("Ticket ya usado", `El ticket <b>${esc(tk.numero)}</b> ya se ha usado. No se pueden sumar sus puntos otra vez.`, false);
+    else avisar(textoError(e));
+  }
+}
+function hojaResultado(titulo, html, ok){
+  abrirHoja(`<div class="centrado"><div class="resultado ${ok ? "ok" : "mal"}">${ok ? "✓" : "!"}</div><h2>${esc(titulo)}</h2><p class="nota">${html}</p></div>
+    <div class="botones" style="justify-content:center"><button class="boton turquesa peq" type="button" data-cerrar>Entendido</button></div>`);
+}
+
+/* ---------- Comprobar ticket (devoluciones) ---------- */
+function hojaComprobar(){
+  abrirHoja(`<h2>Comprobar ticket</h2><p class="nota">Para devoluciones: mira si un ticket sumó puntos y, si hace falta, anúlalos.</p>
+    <div class="pila" style="margin-top:12px"><button class="boton rosa" type="button" id="btnLeerComprobar">${I.qr} Escanear QR del ticket</button></div>
+    <p class="centrado nota" style="margin:12px 0 6px">o escribe el número del ticket</p>
+    <div class="importe"><input id="numTicket" style="font-size:18px" placeholder="Ej.: T-000123" autocomplete="off"></div>
+    <p class="error" id="ctError" role="alert" style="margin-top:8px"></p>
+    <div class="botones"><button class="boton peq" type="button" data-cerrar>Cerrar</button><button class="boton turquesa peq" type="button" id="btnBuscarTicket">Comprobar</button></div>`);
+}
+async function comprobarTicket(numero){
+  if (!numero) return;
+  try{
+    const s = await getDoc(doc(db, "tickets", idTicket(numero)));
+    if (!s.exists()){ hojaResultado("Sin puntos", `El ticket <b>${esc(numero)}</b> <b>no ha sumado puntos</b> en La PiruClub. No hay que hacer nada.`, true); return; }
+    const d = s.data();
+    if (d.estado === "anulado"){ hojaResultado("Ya anulado", `Los puntos del ticket <b>${esc(numero)}</b> ya se anularon el ${fecha(d.anuladoEn)}${d.anuladoPorNombre ? " (" + esc(d.anuladoPorNombre) + ")" : ""}.`, true); return; }
+    abrirHoja(`<h2>Este ticket sumó puntos</h2>
+      <div class="ficha" style="margin-top:10px">
+        <div class="fila"><div class="txt"><small>Ticket</small><b>${esc(d.numero)}</b></div><div class="txt" style="text-align:right"><small>Importe</small><b>${euros(d.total)}</b></div></div>
+        <div class="fila"><div class="txt"><small>Socio</small><b>${esc(d.socioNombre)}</b></div><div class="txt" style="text-align:right"><small>Puntos</small><b>${d.puntos}</b></div></div>
+        <div class="fila"><div class="txt"><small>Escaneado</small><b>${fecha(d.escaneado)}</b></div><div class="txt" style="text-align:right"><small>Por</small><b>${esc(d.porNombre || "")}</b></div></div>
+      </div>
+      ${esAdmin() ? `<p class="nota" style="margin-top:12px">Si el cliente devuelve este ticket, anula los puntos: se le restarán ${d.puntos} puntos y el ticket quedará anulado.</p>
+        <p class="error" id="anError" role="alert"></p>
+        <div class="botones"><button class="boton peq" type="button" data-cerrar>Cerrar</button><button class="boton peligro peq" type="button" id="btnAnular" data-ticket="${esc(idTicket(d.numero))}">Anular puntos</button></div>`
+      : `<p class="nota" style="margin-top:12px">Solo un administrador puede anular estos puntos.</p><div class="botones"><button class="boton peq" type="button" data-cerrar>Cerrar</button></div>`}`);
+  }catch(e){ avisar(textoError(e)); }
+}
+async function anularTicket(id){
+  const b = $("#btnAnular"), err = $("#anError");
+  b.disabled = true; b.textContent = "Anulando…";
+  try{
+    const s = await getDoc(doc(db, "tickets", id)); if (!s.exists()) return;
+    const d = s.data();
+    const orig = await getDoc(doc(db, "socios", d.socioId, "movimientos", d.movId));
+    // El descuento caduca a la vez que los puntos que anula, para no restar dos veces
+    const caduca = orig.exists() && orig.data().caduca ? orig.data().caduca : caducaDesde();
+    const lote = writeBatch(db);
+    lote.update(doc(db, "tickets", id), {estado: "anulado", anuladoEn: serverTimestamp(), anuladoPor: S.user.uid, anuladoPorNombre: S.staff.nombre || ""});
+    lote.set(doc(db, "socios", d.socioId, "movimientos", "dv_" + id), {tipo: "ajuste", puntos: -d.puntos, motivo: "Devolución del ticket " + d.numero,
+      ticket: d.numero, fecha: serverTimestamp(), caduca, por: S.user.uid, porNombre: S.staff.nombre || ""});
+    await lote.commit();
+    hojaResultado("Puntos anulados", `Se han restado <b>${d.puntos} puntos</b> a <b>${esc(d.socioNombre)}</b>. El ticket <b>${esc(d.numero)}</b> queda anulado.`, true);
+    if (S.local.ficha?.id === d.socioId) abrirFicha(d.socioId);
+  }catch(e){ b.disabled = false; b.textContent = "Anular puntos"; if (err) err.textContent = textoError(e); }
 }
 function pararLector(){ if (lector){ const l = lector; lector = null; l.stop().catch(() => {}).finally(() => { try{ l.clear(); }catch(e){} }); } }
 async function buscarSocio(){
@@ -1010,9 +1124,11 @@ function fichaSocio(f){
     ${f.emailVerificado !== true ? `<div class="aviso-cumple" style="color:var(--suave);background:var(--suelo)">Email sin confirmar: no puede canjear el regalo de bienvenida hasta confirmarlo.</div>` : ""}
   </div>
   <div class="seccion-t"><h2 class="titulo">Sumar puntos</h2></div>
+  <button class="boton rosa" type="button" id="btnTicket">${I.qr} Escanear ticket</button>
+  <p class="centrado nota" style="margin:12px 0 8px">o escribe el importe a mano</p>
   <div class="importe"><input id="importe" type="text" inputmode="decimal" placeholder="0,00 €" autocomplete="off"></div>
   <p class="vista-pts" id="vistaPts">Escribe el importe del ticket</p>
-  <button class="boton rosa" type="button" id="btnSumar">Sumar puntos</button>
+  <button class="boton turquesa" type="button" id="btnSumar">Sumar puntos</button>
   <div class="seccion-t"><h2 class="titulo">Promociones disponibles</h2></div>
   ${promos.length ? promos.map(({p}) => `<div class="fila"><div class="txt"><b>${esc(p.titulo)}</b><small>${esc(p.descripcion || "")}</small></div><button class="boton turquesa peq" type="button" data-canjear="${p.id}">Canjear</button></div>`).join("") : `<div class="vacio">No tiene promociones disponibles ahora.</div>`}
   ${esAdmin() ? `<div class="seccion-t"><h2 class="titulo">Ajuste manual</h2></div>
@@ -1227,7 +1343,12 @@ document.addEventListener("click", e => {
       const n = $("#nNombre").value.trim(); if (!n) return;
       updateDoc(doc(db, "socios", S.user.uid), {nombre: n}).then(() => { cerrarHoja(); avisar("Nombre cambiado"); }).catch(er => avisar(textoError(er))); break;
     }
-    case "btnEscanear": abrirLector(); break;
+    case "btnEscanear": abrirLector("tarjeta"); break;
+    case "btnTicket": abrirLector("ticket"); break;
+    case "btnComprobar": hojaComprobar(); break;
+    case "btnLeerComprobar": abrirLector("comprobar"); break;
+    case "btnBuscarTicket": { const n = $("#numTicket").value.trim(); if (!n){ $("#ctError").textContent = "Escribe el número del ticket."; break; } comprobarTicket(n); break; }
+    case "btnAnular": anularTicket(t.dataset.ticket); break;
     case "btnBuscar": buscarSocio(); break;
     case "btnSumar": sumarPuntos(); break;
     case "btnAjuste": ajusteManual(); break;

@@ -1,6 +1,6 @@
 // La PiruClub: service worker sencillo. Siempre intenta la versión más nueva
 // de internet y, solo si no hay conexión, usa la copia guardada.
-const CACHE = "piruclub-v1";
+const CACHE = "piruclub-v2";
 const BASE = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(BASE)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", e => {

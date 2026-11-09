@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>La PiruClub · Club de socios de La Piruleta</title>
 <meta name="description" content="Hazte socio de La Piruleta: suma puntos, sube de nivel y disfruta de promociones exclusivas.">
-<meta name="theme-color" content="#0E6878">
+<meta name="theme-color" content="#124F61">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -18,21 +18,24 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <style>
 :root{
-  --fondo:#FFFFFF; --suelo:#F3F8F9; --turquesa:#1B97AE; --turquesa-osc:#0E6878; --noche:#0A4652; --piruleta:#E8507A;
+  --fondo:#FFFFFF; --suelo:#F4F9FB; --turquesa:#1B7F95; --turquesa-osc:#124F61; --noche:#0E3F4D; --piruleta:#E8507A;
   --tinta:#16343A; --suave:#5E7479; --linea:#E3ECEE; --aviso:#C62828; --ok:#1E8E5A;
   --bronce:#C98A55; --plata:#AEB9C0; --oro:#E2B84A;
+  --sobre-turquesa:#FFFFFF; --cab1:#0E3F4D; --cab2:#124F61; --cab3:#1B7F95;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --fondo:#10232A; --suelo:#0B1A1F; --turquesa:#3FB6CB; --turquesa-osc:#8ED9E6; --noche:#06262E; --piruleta:#FF7FA2;
-    --tinta:#E9F4F6; --suave:#9CB4B9; --linea:#22414A; --aviso:#FF9A9A; --ok:#5FD39C;
+    --fondo:#132C36; --suelo:#10242C; --turquesa:#4FC3D8; --turquesa-osc:#8ED9E6; --noche:#08222B; --piruleta:#FF7FA2;
+    --tinta:#E9F4F6; --suave:#AAB9BF; --linea:#27667A; --aviso:#FF9A9A; --ok:#5FD39C;
+    --sobre-turquesa:#08222B; --cab1:#08222B; --cab2:#124F61; --cab3:#1F7A90;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"]{
-  --fondo:#10232A; --suelo:#0B1A1F; --turquesa:#3FB6CB; --turquesa-osc:#8ED9E6; --noche:#06262E; --piruleta:#FF7FA2;
-  --tinta:#E9F4F6; --suave:#9CB4B9; --linea:#22414A; --aviso:#FF9A9A; --ok:#5FD39C;
+  --fondo:#132C36; --suelo:#10242C; --turquesa:#4FC3D8; --turquesa-osc:#8ED9E6; --noche:#08222B; --piruleta:#FF7FA2;
+  --tinta:#E9F4F6; --suave:#AAB9BF; --linea:#27667A; --aviso:#FF9A9A; --ok:#5FD39C;
+    --sobre-turquesa:#08222B; --cab1:#08222B; --cab2:#124F61; --cab3:#1F7A90;
   color-scheme: dark;
 }
 *{box-sizing:border-box}
@@ -59,7 +62,7 @@ h1,h2,h3{margin:0}
   background:var(--fondo);color:var(--tinta);font-weight:700;font-size:16px;cursor:pointer;text-decoration:none}
 .boton svg{width:22px;height:22px;flex:none}
 .boton.rosa{background:var(--piruleta);border-color:var(--piruleta);color:#fff}
-.boton.turquesa{background:var(--turquesa);border-color:var(--turquesa);color:#fff}
+.boton.turquesa{background:var(--turquesa);border-color:var(--turquesa);color:var(--sobre-turquesa)}
 .boton.peq{width:auto;padding:9px 15px;font-size:14.5px}
 .boton.peligro{color:var(--aviso);border-color:var(--aviso)}
 .boton:disabled{opacity:.55;cursor:default}
@@ -81,7 +84,7 @@ h1,h2,h3{margin:0}
   -webkit-mask:radial-gradient(14px at 50% 100%,#0000 98%,#000) 0 0/28px 100%;mask:radial-gradient(14px at 50% 100%,#0000 98%,#000) 0 0/28px 100%}
 .toldo::after{content:"";position:absolute;inset:0 0 auto;height:22px;background:linear-gradient(rgba(0,0,0,.18),transparent)}
 .portada{text-align:center;padding:0 20px;margin-top:-32px;position:relative}
-.logo{width:112px;height:112px;border-radius:50%;margin:0 auto;object-fit:cover;background:#fff;box-shadow:0 0 0 5px var(--fondo),0 8px 24px rgba(14,104,120,.22)}
+.logo{width:112px;height:112px;border-radius:50%;margin:0 auto;object-fit:cover;background:#fff;box-shadow:0 0 0 5px var(--fondo),0 8px 24px rgba(18,79,97,.22)}
 .portada h1{font-size:36px;margin:12px 0 0}
 .ventajas{list-style:none;margin:18px 0 0;padding:0;display:grid;gap:12px;text-align:left}
 .ventajas li{display:flex;gap:12px;align-items:center;font-size:15.5px}
@@ -94,7 +97,7 @@ h1,h2,h3{margin:0}
 .instalar .qr{width:150px;margin:10px auto 0;background:#fff;padding:8px;border-radius:12px}
 
 /* ---------- Cabecera del socio (estilo club) ---------- */
-.cab{background:linear-gradient(160deg,var(--noche),var(--turquesa-osc) 55%,var(--turquesa));color:#fff;padding:18px 18px 22px;border-radius:0 0 26px 26px;text-align:center;position:relative}
+.cab{background:linear-gradient(160deg,var(--cab1),var(--cab2) 55%,var(--cab3));color:#fff;padding:18px 18px 22px;border-radius:0 0 26px 26px;text-align:center;position:relative}
 :root[data-theme="dark"] .cab,.cab{--tx:#fff}
 .cab .saludo{font-size:15px;opacity:.9;margin:0}
 .arco{position:relative;width:250px;max-width:80%;margin:6px auto 0}
@@ -159,7 +162,7 @@ h1,h2,h3{margin:0}
 .nivel[open] .flecha{transform:rotate(180deg)}
 .nivel .dentro{padding:0 14px 14px 60px;color:var(--suave);font-size:14.5px;white-space:pre-line}
 .nivel.actual{border-color:var(--turquesa)}
-.chip-actual{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:999px;background:var(--turquesa);color:#fff;font-size:11.5px;font-weight:800;vertical-align:2px}
+.chip-actual{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:999px;background:var(--turquesa);color:var(--sobre-turquesa);font-size:11.5px;font-weight:800;vertical-align:2px}
 
 /* ---------- Historial ---------- */
 .mov{display:flex;gap:12px;align-items:center;padding:13px 0;border-bottom:1px solid var(--linea)}
@@ -230,7 +233,7 @@ h1,h2,h3{margin:0}
 
 /* ---------- Pantalla de bienvenida animada ---------- */
 #splash{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;
-  background:radial-gradient(circle at 50% 42%,#1B97AE 0%,#0E6878 45%,#0A4652 100%);transition:opacity .45s ease,transform .45s ease}
+  background:radial-gradient(circle at 50% 42%,#1B7F95 0%,#124F61 45%,#0E3F4D 100%);transition:opacity .45s ease,transform .45s ease}
 #splash.fuera{opacity:0;transform:scale(1.06);pointer-events:none}
 .sp-centro{position:relative;width:170px;height:170px}
 .sp-logo{position:relative;width:170px;height:170px;border-radius:50%;background:#fff;box-shadow:0 14px 40px rgba(0,0,0,.35);
@@ -296,10 +299,10 @@ function mostrarFallo(){
   var a = document.getElementById("app"); if (!a || !a.querySelector(".cargando")) return;
   var sp = document.getElementById("splash"); if (sp) sp.remove();
   var det = window.__errores.length ? window.__errores.join("<br>") : "Sin errores registrados (la conexión con Firebase no responde).";
-  a.innerHTML = '<div style="padding:40px 22px;text-align:center;font-family:system-ui,sans-serif"><h2 style="color:#0E6878">No se ha podido abrir La PiruClub</h2>'
+  a.innerHTML = '<div style="padding:40px 22px;text-align:center;font-family:system-ui,sans-serif"><h2 style="color:#124F61">No se ha podido abrir La PiruClub</h2>'
     + '<p style="color:#5E7479">Haz una captura de esta pantalla y envíasela a quien te ayuda con la app.</p>'
     + '<p style="font-family:monospace;font-size:12px;text-align:left;background:#f3f8f9;color:#16343A;padding:10px;border-radius:10px;word-break:break-word">' + det.replace(/</g,"&lt;").replace(/&lt;br>/g,"<br>") + '<br>Navegador: ' + navigator.userAgent.replace(/</g,"") + '</p>'
-    + '<button onclick="location.reload()" style="padding:12px 22px;border-radius:999px;border:0;background:#1B97AE;color:#fff;font-weight:700;font-size:16px">Reintentar</button></div>';
+    + '<button onclick="location.reload()" style="padding:12px 22px;border-radius:999px;border:0;background:#1B7F95;color:#fff;font-weight:700;font-size:16px">Reintentar</button></div>';
 }
 setTimeout(mostrarFallo, 20000);
 </script>
@@ -335,6 +338,8 @@ const DEFECTO = {
     {id: "oro",    nombre: "Oro",    min: 80,  beneficios: "Todo lo de Plata.\nLas mejores promociones, solo para Oro."}
   ]
 };
+// Versión de la app (se ve en Panel del local → Ajustes). Súbela en cada cambio.
+const VERSION_APP = "1.1.0";
 const VERSION_LEGAL = "1";
 // Regalo de cumpleaños: días antes y después del cumpleaños en que se puede usar (3 + el día + 3 = una semana)
 const CUMPLE_DIAS_ANTES = 3;
@@ -1327,7 +1332,8 @@ function lAjustes(){
       <label class="campo" style="margin:0"><span>Beneficios (los ven los socios)</span><textarea id="aB${i}">${esc(n.beneficios || "")}</textarea></label></div>`).join("")}
     <p class="error" id="aError" role="alert"></p>
     <button class="boton rosa" type="button" id="btnGuardarAjustes">Guardar ajustes</button>
-    <p class="nota" style="margin:12px 0 0">Los cambios de puntos por euro y caducidad se aplican a las visitas nuevas.</p>`;
+    <p class="nota" style="margin:12px 0 0">Los cambios de puntos por euro y caducidad se aplican a las visitas nuevas.</p>
+    <p class="nota" style="margin:18px 0 0;text-align:center">La PiruClub · versión ${VERSION_APP}</p>`;
 }
 async function guardarAjustes(){
   const ns = niveles(), err = $("#aError");
